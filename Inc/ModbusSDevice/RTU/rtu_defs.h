@@ -10,11 +10,9 @@
 #define __MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address)                                                                   \
 ({                                                                                                                     \
    __typeof__(address) _address = address;                                                                             \
-   _address != __MODBUS_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS ||                                                     \
+   _address != __MODBUS_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                     \
    _address <= __MODBUS_SDEVICE_MAX_VALID_SLAVE_ADDRESS;                                                               \
 })
-
-__SDEVICE_HANDLE_FORWARD_DECLARATION(Modbus);
 
 typedef enum
 {

@@ -85,7 +85,7 @@ typedef struct
 
 __SDEVICE_HANDLE_DEFINITION(Modbus);
 
-__SDEVICE_INITIALIZE_INTERNALS_DECLARATION(Modbus,);
+__SDEVICE_INITIALIZE_HANDLE_DECLARATION(Modbus,);
 
 /* Satty's interface end */
 

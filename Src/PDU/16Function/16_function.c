@@ -21,7 +21,8 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
    if(processingData->FunctionSpecificDataSize < sizeof(ModbusFunction16RequestData))
       return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
 
-   ModbusFunction16RequestData *request = handle->Dynamic.ReceiveBufferFunctionSpecificData;
+   ModbusFunction16RequestData *request =
+            (ModbusFunction16RequestData *)handle->Dynamic.ReceiveBufferFunctionSpecificData;
 
    if(request->BytesToFollow / sizeof(ModbusSDeviceRegister) != request->RegistersToWriteCount ||
       request->BytesToFollow % sizeof(ModbusSDeviceRegister) != 0                              ||
@@ -29,19 +30,19 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
 
    ModbusSDeviceStatus status =
-            handle->Constant->WriteRegistersFunction(handle,
-                                                     request->RegistersBuffer,
-                                                     &(ModbusSDeviceOperationParameters)
-                                                     {
-                                                        .RegisterAddress = request->DataRegisterAddress,
-                                                        .RegistersCount = request->RegistersToWriteCount,
-                                                        .RequestContext = processingData->RequestParameters
-                                                     });
+            handle->Constant.WriteRegistersFunction(handle,
+                                                    request->RegistersBuffer,
+                                                    &(ModbusSDeviceOperationParameters)
+                                                    {
+                                                       .RegisterAddress = request->DataRegisterAddress,
+                                                       .RegistersCount = request->RegistersToWriteCount,
+                                                       .RequestContext = processingData->RequestParameters
+                                                    });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
       return status;
 
-   ModbusFunction16ReplyData *reply = handle->Dynamic.TransmitBufferFunctionSpecificData;
+   ModbusFunction16ReplyData *reply = (ModbusFunction16ReplyData *)handle->Dynamic.TransmitBufferFunctionSpecificData;
    reply->DataRegisterAddress = request->DataRegisterAddress;
    reply->WrittenRegistersCount = request->RegistersToWriteCount;
 
