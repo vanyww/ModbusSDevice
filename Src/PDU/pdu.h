@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ModbusSDevice/core.h"
+#include "../../Inc/ModbusSDevice/core.h"
 
 #define __MODBUS_MAX_PDU_SIZE 253U
 
