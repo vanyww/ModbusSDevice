@@ -11,6 +11,7 @@ __SDEVICE_SET_SETTING_DECLARATION(Modbus, SlaveAddress, handle, value)
    __SDEVICE_HANDLE(Modbus) *deviceHandle = handle;
 
    SDeviceAssert(deviceHandle->Constant.Type == MODBUS_SDEVICE_TYPE_RTU);
+   SDeviceAssert(deviceHandle->IsInitialized == true);
 
    uint8_t address;
    memcpy(&address, value, sizeof(deviceHandle->Settings.Rtu.SlaveAddress));
