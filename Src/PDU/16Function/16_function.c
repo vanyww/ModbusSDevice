@@ -30,14 +30,14 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
 
    ModbusSDeviceStatus status =
-            handle->Constant.WriteRegistersFunction(handle,
-                                                    request->RegistersBuffer,
-                                                    &(ModbusSDeviceOperationParameters)
-                                                    {
-                                                       .RegisterAddress = request->DataRegisterAddress,
-                                                       .RegistersCount = request->RegistersToWriteCount,
-                                                       .RequestContext = processingData->RequestParameters
-                                                    });
+            handle->Constant->WriteRegistersFunction(handle,
+                                                     request->RegistersBuffer,
+                                                     &(ModbusSDeviceOperationParameters)
+                                                     {
+                                                        .RegisterAddress = request->DataRegisterAddress,
+                                                        .RegistersCount = request->RegistersToWriteCount,
+                                                        .RequestContext = processingData->RequestParameters
+                                                     });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
       return status;

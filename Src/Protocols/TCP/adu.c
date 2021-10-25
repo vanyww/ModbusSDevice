@@ -8,7 +8,7 @@ size_t ModbusTcpProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
    if(requestSize < sizeof(ModbusTcpAduData) || requestSize > __MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE)
        return 0;
 
-   ModbusTcpAduData *requestAdu = (ModbusTcpAduData *)handle->Constant.ReceiveBuffer;
+   ModbusTcpAduData *requestAdu = (ModbusTcpAduData *)handle->Constant->ReceiveBuffer;
 
    if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
        return 0;
@@ -27,7 +27,7 @@ size_t ModbusTcpProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
                                              }
                                           });
 
-   ModbusTcpAduData *replyAdu = (ModbusTcpAduData *)handle->Constant.TransmitBuffer;
+   ModbusTcpAduData *replyAdu = (ModbusTcpAduData *)handle->Constant->TransmitBuffer;
 
    replyAdu->ProtocolId = __MODBUS_TCP_PROTOCOL_ID;
    replyAdu->TransactionId = requestAdu->TransactionId;

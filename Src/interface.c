@@ -6,7 +6,7 @@ size_t ModbusSDeviceProcessRequest(__SDEVICE_HANDLE(Modbus) *handle, size_t requ
    SDeviceAssert(handle != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   switch(handle->Constant.Type)
+   switch(handle->Constant->Type)
    {
       case MODBUS_SDEVICE_TYPE_RTU:
          return ModbusRtuProcessAdu(handle, requestSize);

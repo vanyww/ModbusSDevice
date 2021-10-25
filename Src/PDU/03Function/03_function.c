@@ -31,14 +31,14 @@ ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
    ModbusFunction03ReplyData *reply = (ModbusFunction03ReplyData *)handle->Dynamic.TransmitBufferFunctionSpecificData;
 
    ModbusSDeviceStatus status =
-            handle->Constant.ReadRegistersFunction(handle,
-                                                   reply->RegistersBuffer,
-                                                   &(ModbusSDeviceOperationParameters)
-                                                   {
-                                                      .RegisterAddress = request->DataRegisterAddress,
-                                                      .RegistersCount = request->RegistersToReadCount,
-                                                      .RequestContext = processingData->RequestParameters
-                                                   });
+            handle->Constant->ReadRegistersFunction(handle,
+                                                    reply->RegistersBuffer,
+                                                    &(ModbusSDeviceOperationParameters)
+                                                    {
+                                                       .RegisterAddress = request->DataRegisterAddress,
+                                                       .RegistersCount = request->RegistersToReadCount,
+                                                       .RequestContext = processingData->RequestParameters
+                                                    });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
       return status;
