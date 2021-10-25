@@ -15,7 +15,7 @@ bool TestTcpReadOneRequest(void)
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0x01 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x05, 0x01, 0x03, 0x02, 0x11, 0x22 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -24,7 +24,7 @@ bool TestTcpReadOneRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -40,7 +40,7 @@ bool TestTcpReadMultipleRequest(void)
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0x02 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x07, 0x01, 0x03, 0x04, 0x11, 0x22, 0x33, 0x44 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -49,7 +49,7 @@ bool TestTcpReadMultipleRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -62,7 +62,7 @@ bool TestTcpReadTooManyRequest(void)
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0xFF };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x01, 0x83, 0x03 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -71,7 +71,7 @@ bool TestTcpReadTooManyRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;

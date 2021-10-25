@@ -15,13 +15,13 @@ bool TestRtuWriteOneRequest(void)
    const uint8_t request[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22, 0xA1, 0x2E };
    const uint8_t expectedReply[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x01, 0x18, 0x12 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    if(MockWriteRegisters[0].AsValue != 0x1122)
@@ -42,13 +42,13 @@ bool TestRtuWriteMultipleRequest(void)
    const uint8_t request[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44, 0x65, 0x7C };
    const uint8_t expectedReply[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x02, 0x58, 0x13 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    if(MockWriteRegisters[0].AsValue != 0x1122)

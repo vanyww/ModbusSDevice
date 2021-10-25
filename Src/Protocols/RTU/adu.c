@@ -7,7 +7,7 @@ size_t ModbusRtuProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
       return 0;
 
    __MODBUS_RTU_ADU_STRUCT_DECLARATION(requestSize - __MODBUS_RTU_EMPTY_ADU_SIZE,) *requestAdu =
-            handle->Constant.ReceiveBuffer;
+            handle->Constant->ReceiveBuffer;
 
    ModbusSDeviceRtuRequestType requestType;
 
@@ -39,7 +39,7 @@ size_t ModbusRtuProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
    if(requestType == MODBUS_SDEVICE_RTU_REQUEST_TYPE_BROADCAST)
       return 0;
 
-   __MODBUS_RTU_ADU_STRUCT_DECLARATION(replyPduSize,) *replyAdu = handle->Constant.TransmitBuffer;
+   __MODBUS_RTU_ADU_STRUCT_DECLARATION(replyPduSize,) *replyAdu = handle->Constant->TransmitBuffer;
 
    replyAdu->SlaveAddress = handle->Settings.Rtu.SlaveAddress;
    replyAdu->Crc16 = ModbusRtuCrcCompute(replyAdu, sizeof(*replyAdu) - sizeof(ModbusRtuCrcType));
