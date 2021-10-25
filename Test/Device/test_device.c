@@ -20,7 +20,7 @@ static __SDEVICE_CONSTANT_DATA(Modbus) ConstantData =
 
 };
 
-__SDEVICE_HANDLE(Modbus) CreateModbusSDevice(ModbusSDeviceType type)
+void CreateModbusSDevice(ModbusSDeviceType type, __SDEVICE_HANDLE(Modbus) *handle)
 {
    memset(TransmitBuffer, 0, sizeof(TransmitBuffer));
    memset(ReceiveBuffer, 0, sizeof(ReceiveBuffer));
@@ -29,8 +29,6 @@ __SDEVICE_HANDLE(Modbus) CreateModbusSDevice(ModbusSDeviceType type)
 
    ConstantData.Type = type;
 
-   __SDEVICE_HANDLE(Modbus) handle = { &ConstantData };
-   __SDEVICE_INITIALIZE_HANDLE(Modbus)(&handle);
-
-   return handle;
+   handle->Constant = &ConstantData;
+   __SDEVICE_INITIALIZE_HANDLE(Modbus)(handle);
 }

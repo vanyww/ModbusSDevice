@@ -9,7 +9,8 @@
 bool TestRtuWriteOneRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(Modbus) handle = CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU);
+   __SDEVICE_HANDLE(Modbus) handle = { 0 };
+   CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU, &handle);
    __SDEVICE_SET_SETTING(Modbus, SlaveAddress)(&handle, &slaveAddress);
 
    const uint8_t request[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22, 0xA1, 0x2E };
@@ -36,7 +37,8 @@ bool TestRtuWriteOneRequest(void)
 bool TestRtuWriteMultipleRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(Modbus) handle = CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU);
+   __SDEVICE_HANDLE(Modbus) handle = { 0 };
+   CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU, &handle);
    __SDEVICE_SET_SETTING(Modbus, SlaveAddress)(&handle, &slaveAddress);
 
    const uint8_t request[] = { 0xAA, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44, 0x65, 0x7C };

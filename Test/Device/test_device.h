@@ -2,4 +2,4 @@
 
 #include "ModbusSDevice/core.h"
 
-__SDEVICE_HANDLE(Modbus) CreateModbusSDevice(ModbusSDeviceType);
+void CreateModbusSDevice(ModbusSDeviceType, __SDEVICE_HANDLE(Modbus) *);

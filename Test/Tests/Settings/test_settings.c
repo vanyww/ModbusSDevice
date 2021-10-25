@@ -5,7 +5,8 @@
 
 bool TestSlaveAddressSettingSet(void)
 {
-   __SDEVICE_HANDLE(Modbus) handle = CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU);
+   __SDEVICE_HANDLE(Modbus) handle = { 0 };
+   CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU, &handle);
 
    for(size_t i = 0; i <= UINT8_MAX; i++)
    {
