@@ -17,7 +17,7 @@ bool TestRtuReadOneRequest(void)
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x01, 0x9D, 0xD1 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x02, 0xCC, 0xBB, 0x88, 0xEF };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -26,7 +26,7 @@ bool TestRtuReadOneRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -45,7 +45,7 @@ bool TestRtuReadMultipleRequest(void)
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x03, 0x1C, 0x10 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x06, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0xA1, 0x2F };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -54,7 +54,7 @@ bool TestRtuReadMultipleRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -69,7 +69,7 @@ bool TestRtuReadTooManyRequest(void)
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { 0xAA, 0x83, 0x03, 0x70, 0xD1 };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
@@ -78,7 +78,7 @@ bool TestRtuReadTooManyRequest(void)
    if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, handle.Constant.TransmitBuffer, replySize) != 0)
+   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -92,7 +92,7 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
 
-   memcpy(handle.Constant.ReceiveBuffer, request, sizeof(request));
+   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)

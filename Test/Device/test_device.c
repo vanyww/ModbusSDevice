@@ -11,6 +11,15 @@
 static uint8_t TransmitBuffer[__MODBUS_MAX_BUFFER_SIZE];
 static uint8_t ReceiveBuffer[__MODBUS_MAX_BUFFER_SIZE];
 
+static __SDEVICE_CONSTANT_DATA(Modbus) ConstantData =
+{
+   .ReadRegistersFunction = ReadRegistersMock,
+   .WriteRegistersFunction = WriteRegistersMock,
+   .TransmitBuffer = TransmitBuffer,
+   .ReceiveBuffer = ReceiveBuffer,
+
+};
+
 __SDEVICE_HANDLE(Modbus) CreateModbusSDevice(ModbusSDeviceType type)
 {
    memset(TransmitBuffer, 0, sizeof(TransmitBuffer));
@@ -18,17 +27,9 @@ __SDEVICE_HANDLE(Modbus) CreateModbusSDevice(ModbusSDeviceType type)
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
 
-   __SDEVICE_HANDLE(Modbus) handle =
-   {
-      {
-         .ReadRegistersFunction = ReadRegistersMock,
-         .WriteRegistersFunction = WriteRegistersMock,
-         .TransmitBuffer = TransmitBuffer,
-         .ReceiveBuffer = ReceiveBuffer,
-         .Type = type
-      }
-   };
+   ConstantData.Type = type;
 
+   __SDEVICE_HANDLE(Modbus) handle = { &ConstantData };
    __SDEVICE_INITIALIZE_HANDLE(Modbus)(&handle);
 
    return handle;
