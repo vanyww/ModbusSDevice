@@ -1,6 +1,7 @@
 #include "test_settings.h"
 #include "../../Device/test_device.h"
 #include "../../Device/Mock/Assertation/mock_assert.h"
+#include "../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
 #include "ModbusSDevice/RTU/rtu_defs.h"
 
 bool TestSlaveAddressSettingSet(void)
@@ -14,6 +15,9 @@ bool TestSlaveAddressSettingSet(void)
       SDeviceSettingSetStatus status = __SDEVICE_SET_SETTING(Modbus, SlaveAddress)(&handle, &address);
 
       if(WasAssertFailed() == true)
+         return false;
+
+      if(WasRuntimeErrorRaised() == true)
          return false;
 
       if(status == SDEVICE_SETTING_SET_STATUS_SET_ERROR)
