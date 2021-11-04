@@ -4,7 +4,10 @@
 size_t ModbusRtuProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
 {
    if(requestSize < sizeof(__MODBUS_RTU_EMPTY_ADU) || requestSize > __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE)
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
       return 0;
+   }
 
    __MODBUS_RTU_ADU_STRUCT_DECLARATION(requestSize - __MODBUS_RTU_EMPTY_ADU_SIZE,) *requestAdu =
             handle->Constant->ReceiveBuffer;
@@ -24,7 +27,10 @@ size_t ModbusRtuProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
    }
 
    if(requestAdu->Crc16 != ModbusRtuCrcCompute(requestAdu, sizeof(*requestAdu) - sizeof(ModbusRtuCrcType)))
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_CRC_ERROR);
       return 0;
+   }
 
    size_t replyPduSize = ModbusProcessPdu(handle,
                                           &(ModbusCommonRequestProcessingData)

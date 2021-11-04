@@ -19,7 +19,10 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
                                                    size_t *replySize)
 {
    if(processingData->FunctionSpecificDataSize < sizeof(ModbusFunction16RequestData))
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
       return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
+   }
 
    ModbusFunction16RequestData *request =
             (ModbusFunction16RequestData *)handle->Dynamic.ReceiveBufferFunctionSpecificData;
@@ -27,7 +30,10 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
    if(request->BytesToFollow / sizeof(ModbusSDeviceRegister) != request->RegistersToWriteCount ||
       request->BytesToFollow % sizeof(ModbusSDeviceRegister) != 0                              ||
       request->BytesToFollow != processingData->FunctionSpecificDataSize - sizeof(ModbusFunction16RequestData))
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR);
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
+   }
 
    ModbusSDeviceStatus status =
             handle->Constant->WriteRegistersFunction(handle,
@@ -40,7 +46,10 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
                                                      });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR);
       return status;
+   }
 
    ModbusFunction16ReplyData *reply = (ModbusFunction16ReplyData *)handle->Dynamic.TransmitBufferFunctionSpecificData;
    reply->DataRegisterAddress = request->DataRegisterAddress;
