@@ -2,6 +2,7 @@
 #include "../../../../Device/test_device.h"
 #include "../../../../Device/Mock/Assertation/mock_assert.h"
 #include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
 #include "ModbusSDevice/RTU/rtu_defs.h"
 
 #include <memory.h>
@@ -22,6 +23,9 @@ bool TestRtuReadOneRequest(void)
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -53,6 +57,9 @@ bool TestRtuReadMultipleRequest(void)
    if(WasAssertFailed() != false)
       return false;
 
+   if(WasRuntimeErrorRaised() == true)
+      return false;
+
    if(replySize != sizeof(expectedReply))
       return false;
 
@@ -78,6 +85,9 @@ bool TestRtuReadTooManyRequest(void)
    if(WasAssertFailed() != false)
       return false;
 
+   if(WasRuntimeErrorRaised() != true)
+      return false;
+
    if(replySize != sizeof(expectedReply))
       return false;
 
@@ -100,6 +110,9 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
    size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
 
    if(WasAssertFailed() != false)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    if(replySize != 0)

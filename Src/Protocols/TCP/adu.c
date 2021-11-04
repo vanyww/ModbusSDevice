@@ -6,15 +6,21 @@
 size_t ModbusTcpProcessAdu(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
 {
    if(requestSize < sizeof(ModbusTcpAduData) || requestSize > __MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE)
-       return 0;
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
+      return 0;
+   }
 
    ModbusTcpAduData *requestAdu = (ModbusTcpAduData *)handle->Constant->ReceiveBuffer;
 
    if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
-       return 0;
+      return 0;
 
    if(requestAdu->PacketSize != requestSize - offsetof(ModbusTcpAduData, SlaveAddress))
-       return 0;
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR);
+      return 0;
+   }
 
    uint8_t slaveAddress = requestAdu->SlaveAddress;
    size_t replyPduSize = ModbusProcessPdu(handle,

@@ -10,7 +10,6 @@ __SDEVICE_INITIALIZE_HANDLE_DECLARATION(Modbus, handle)
    SDeviceAssert(handle->Constant->TransmitBuffer != NULL);
    SDeviceAssert(handle->Constant->ReadRegistersFunction != NULL);
    SDeviceAssert(handle->Constant->WriteRegistersFunction != NULL);
-   SDeviceAssert(__MODBUS_SDEVICE_IS_VALID_TYPE_VALUE(handle->Constant->Type) == true);
 
    switch(handle->Constant->Type)
    {
@@ -35,6 +34,7 @@ __SDEVICE_INITIALIZE_HANDLE_DECLARATION(Modbus, handle)
          break;
 
       default:
+         SDeviceAssert(false);
          return;
    }
 

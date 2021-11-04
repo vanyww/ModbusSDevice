@@ -2,6 +2,7 @@
 #include "../../../../Device/test_device.h"
 #include "../../../../Device/Mock/Assertation/mock_assert.h"
 #include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
 #include "ModbusSDevice/RTU/rtu_defs.h"
 
 #include <memory.h>
@@ -29,6 +30,9 @@ bool TestRtuWriteOneRequest(void)
       return false;
 
    if(WasAssertFailed() != false)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    return true;
@@ -60,6 +64,9 @@ bool TestRtuWriteMultipleRequest(void)
       return false;
 
    if(WasAssertFailed() != false)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    return true;

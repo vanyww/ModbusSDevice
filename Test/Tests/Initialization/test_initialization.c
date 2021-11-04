@@ -1,6 +1,7 @@
 #include "test_initialization.h"
 #include "../../Device/test_device.h"
 #include "../../Device/Mock/Assertation/mock_assert.h"
+#include "../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
 
 bool TestRtuHandleInitialization(void)
 {
@@ -11,6 +12,9 @@ bool TestRtuHandleInitialization(void)
       return false;
 
    if(WasAssertFailed() == true)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    return true;
@@ -25,6 +29,9 @@ bool TestTcpHandleInitialization(void)
       return false;
 
    if(WasAssertFailed() == true)
+      return false;
+
+   if(WasRuntimeErrorRaised() == true)
       return false;
 
    return true;

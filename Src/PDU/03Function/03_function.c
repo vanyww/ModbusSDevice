@@ -20,13 +20,19 @@ ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
                                                    size_t *replySize)
 {
    if(processingData->FunctionSpecificDataSize != sizeof(ModbusFunction03RequestData))
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
       return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
+   }
 
    ModbusFunction03RequestData *request =
             (ModbusFunction03RequestData *)handle->Dynamic.ReceiveBufferFunctionSpecificData;
 
    if(request->RegistersToReadCount > __MODBUS_FUNCTION_03_MAX_REGISTERS_COUNT)
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR);
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
+   }
 
    ModbusFunction03ReplyData *reply = (ModbusFunction03ReplyData *)handle->Dynamic.TransmitBufferFunctionSpecificData;
 
@@ -41,7 +47,10 @@ ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
                                                     });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR);
       return status;
+   }
 
    reply->FollowingDataBytes = request->RegistersToReadCount * sizeof(ModbusSDeviceRegister);
 

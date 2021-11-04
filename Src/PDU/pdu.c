@@ -33,6 +33,7 @@ size_t ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle, ModbusCommonRequestPro
          break;
 
       default:
+         SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_FUNCTION_CODE_ERROR);
          return ModbusEncodeExceptionPdu(handle, MODBUS_SDEVICE_STATUS_ILLEGAL_FUNCTION_ERROR);
    }
 

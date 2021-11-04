@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define __MODBUS_SDEVICE_IS_VALID_TYPE_VALUE(value) ((value) == MODBUS_SDEVICE_TYPE_RTU ||                             \
-                                                     (value) == MODBUS_SDEVICE_TYPE_TCP)
-
 typedef enum
 {
    MODBUS_SDEVICE_STATUS_OK                                            = 0x00,
@@ -31,6 +28,15 @@ typedef enum
    MODBUS_SDEVICE_TYPE_RTU,
    MODBUS_SDEVICE_TYPE_TCP
 } ModbusSDeviceType;
+
+typedef enum
+{
+   MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR,
+   MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_FUNCTION_CODE_ERROR,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_CRC_ERROR
+} ModbusSDeviceRuntimeError;
 
 typedef union __attribute__((packed, scalar_storage_order("big-endian")))
 {
