@@ -13,11 +13,14 @@ __SDEVICE_SET_SETTING_DECLARATION(Modbus, SlaveAddress, handle, value)
    SDeviceAssert(deviceHandle->Constant->Type == MODBUS_SDEVICE_TYPE_RTU);
    SDeviceAssert(deviceHandle->IsInitialized == true);
 
-   uint8_t address;
+   __typeof__(deviceHandle->Settings.Rtu.SlaveAddress) address;
    memcpy(&address, value, sizeof(deviceHandle->Settings.Rtu.SlaveAddress));
 
    if(__MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
+   {
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_SETTING_VALIDATION_ERROR);
       return SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR;
+   }
 
    deviceHandle->Settings.Rtu.SlaveAddress = address;
 
