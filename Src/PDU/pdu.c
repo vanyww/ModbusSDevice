@@ -13,7 +13,7 @@ typedef struct
 /* function codes that are implemented */
 typedef enum
 {
-   FUNCTION_CODE_READ_HOLDING_REGISTERS = 0x03,
+   FUNCTION_CODE_READ_HOLDING_REGISTERS    = 0x03,
    FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS = 0x10
 } FunctionCode;
 

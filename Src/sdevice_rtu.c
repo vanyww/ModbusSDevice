@@ -18,7 +18,7 @@ __SDEVICE_SET_SETTING_DECLARATION(Modbus, SlaveAddress, handle, value)
 
    if(__MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_SETTING_VALIDATION_ERROR);
+      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_SLAVE_ADDRESS_SETTING_VALIDATION_ERROR);
       return SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR;
    }
 

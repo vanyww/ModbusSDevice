@@ -13,12 +13,12 @@
 
 #define __MODBUS_SDEVICE_RTU_GET_INTERCHAR_DELAY(baud, char_size)                                                      \
     (((baud) > __MODBUS_SDEVICE_RTU_PREDEFINED_DELAYS_USAGE_THERESHOLD_BAUD) ?                                         \
-            __MODBUS_SDEVICE_RTU_INTERCHAR_DELAY_PREDEFINED :                                                          \
-            __MODBUS_SDEVICE_RTU_CHARS_TO_SECONDS_DELAY(baud, __MODBUS_SDEVICE_RTU_INTERCHAR_DELAY_CHARS, char_size))
+      __MODBUS_SDEVICE_RTU_INTERCHAR_DELAY_PREDEFINED                        :                                         \
+      __MODBUS_SDEVICE_RTU_CHARS_TO_SECONDS_DELAY(baud, __MODBUS_SDEVICE_RTU_INTERCHAR_DELAY_CHARS, char_size))
 #define __MODBUS_SDEVICE_RTU_GET_INTERFRAME_DELAY(baud, char_size)                                                     \
     (((baud) > __MODBUS_SDEVICE_RTU_PREDEFINED_DELAYS_USAGE_THERESHOLD_BAUD) ?                                         \
-            __MODBUS_SDEVICE_RTU_INTERFRAME_DELAY_PREDEFINED :                                                         \
-            __MODBUS_SDEVICE_RTU_CHARS_TO_SECONDS_DELAY(baud, __MODBUS_SDEVICE_RTU_INTERFRAME_DELAY_CHARS, char_size))
+      __MODBUS_SDEVICE_RTU_INTERFRAME_DELAY_PREDEFINED                       :                                         \
+      __MODBUS_SDEVICE_RTU_CHARS_TO_SECONDS_DELAY(baud, __MODBUS_SDEVICE_RTU_INTERFRAME_DELAY_CHARS, char_size))
 
 #define __MODBUS_SDEVICE_RTU_TIMER_DIVIDER 1000000
 #define __MODBUS_SDEVICE_RTU_TIMER_PERIOD (1.f / __MODBUS_SDEVICE_RTU_TIMER_DIVIDER)

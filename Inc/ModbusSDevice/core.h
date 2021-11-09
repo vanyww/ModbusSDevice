@@ -29,16 +29,6 @@ typedef enum
    MODBUS_SDEVICE_TYPE_TCP
 } ModbusSDeviceType;
 
-typedef enum
-{
-   MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR           = 0x01,
-   MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR        = 0x02,
-   MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR = 0x03,
-   MODBUS_SDEVICE_RUNTIME_REQUEST_FUNCTION_CODE_ERROR  = 0x04,
-   MODBUS_SDEVICE_RUNTIME_REQUEST_CRC_ERROR            = 0x05,
-   MODBUS_SDEVICE_RUNTIME_SETTING_VALIDATION_ERROR     = 0x06
-} ModbusSDeviceRuntimeError;
-
 typedef union __attribute__((packed, scalar_storage_order("big-endian")))
 {
    uint16_t AsValue;
@@ -72,7 +62,8 @@ typedef struct
 
 typedef struct { } ModbusSDeviceTcpSettings;
 
-typedef struct {
+typedef struct
+{
    uint8_t SlaveAddress;
 } ModbusSDeviceRtuSettings;
 
@@ -93,6 +84,16 @@ typedef struct
 __SDEVICE_HANDLE_DEFINITION(Modbus);
 
 __SDEVICE_INITIALIZE_HANDLE_DECLARATION(Modbus,);
+
+typedef enum
+{
+   MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR                     = 0x01,
+   MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR                  = 0x02,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR           = 0x03,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_FUNCTION_CODE_ERROR            = 0x04,
+   MODBUS_SDEVICE_RUNTIME_REQUEST_CRC_ERROR                      = 0x05,
+   MODBUS_SDEVICE_RUNTIME_SLAVE_ADDRESS_SETTING_VALIDATION_ERROR = 0x06
+} ModbusSDeviceRuntimeError;
 
 /* Satty's interface end */
 

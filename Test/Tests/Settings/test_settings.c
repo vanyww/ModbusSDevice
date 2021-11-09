@@ -17,15 +17,12 @@ bool TestSlaveAddressSettingSet(void)
       if(WasAssertFailed() == true)
          return false;
 
-      if(WasRuntimeErrorRaised() == true)
-         return false;
-
       if(status == SDEVICE_SETTING_SET_STATUS_SET_ERROR)
          return false;
 
       if(address == 0 || address > __MODBUS_SDEVICE_MAX_VALID_SLAVE_ADDRESS)
       {
-         if(status != SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR)
+         if(status != SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR || WasRuntimeErrorRaised() != true)
             return false;
       }
       else
@@ -33,6 +30,9 @@ bool TestSlaveAddressSettingSet(void)
          if(handle.Settings.Rtu.SlaveAddress != i)
             return false;
       }
+
+      if(WasRuntimeErrorRaised() == true)
+         return false;
    }
 
    return true;

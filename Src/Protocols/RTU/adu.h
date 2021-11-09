@@ -14,7 +14,7 @@ struct __attribute__((packed)) name                                             
       ModbusCommonPdu Pdu;                                                                                             \
       uint8_t PduBytes[(pdu_size)];                                                                                    \
    };                                                                                                                  \
-   ModbusRtuCrcType Crc16;                                                                                                     \
+   ModbusRtuCrcType Crc16;                                                                                             \
 }
 
 size_t ModbusRtuProcessAdu(__SDEVICE_HANDLE(Modbus) *, size_t);
