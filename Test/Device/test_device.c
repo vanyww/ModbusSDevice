@@ -17,7 +17,6 @@ static __SDEVICE_CONSTANT_DATA(Modbus) ConstantData =
    .WriteRegistersFunction = WriteRegistersMock,
    .TransmitBuffer = TransmitBuffer,
    .ReceiveBuffer = ReceiveBuffer,
-
 };
 
 void CreateModbusSDevice(ModbusSDeviceType type, __SDEVICE_HANDLE(Modbus) *handle)

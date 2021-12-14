@@ -48,7 +48,6 @@ __SDEVICE_HANDLE_FORWARD_DECLARATION(Modbus);
 
 typedef struct
 {
-   void *Context;
    ModbusSDeviceStatus (*ReadRegistersFunction)(__SDEVICE_HANDLE(Modbus) *,
                                                 ModbusSDeviceRegister *,
                                                 const ModbusSDeviceOperationParameters *);
