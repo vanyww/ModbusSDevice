@@ -1,7 +1,9 @@
-#include "Protocols/RTU/adu.h"
-#include "Protocols/TCP/adu.h"
+#include "ADU/RTU/adu.h"
+#include "ADU/TCP/adu.h"
 
-size_t ModbusSDeviceProcessRequest(__SDEVICE_HANDLE(Modbus) *handle, size_t requestSize)
+bool ModbusSDeviceTryProcessRequest(__SDEVICE_HANDLE(Modbus) *handle,
+                                    ModbusSDeviceRequest *request,
+                                    ModbusSDeviceResponse *response)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(handle->IsInitialized == true);
@@ -9,13 +11,13 @@ size_t ModbusSDeviceProcessRequest(__SDEVICE_HANDLE(Modbus) *handle, size_t requ
    switch(handle->Constant->Type)
    {
       case MODBUS_SDEVICE_TYPE_RTU:
-         return ModbusRtuProcessAdu(handle, requestSize);
+         return ModbusRtuTryProcessAdu(handle, request, response);
 
       case MODBUS_SDEVICE_TYPE_TCP:
-         return ModbusTcpProcessAdu(handle, requestSize);
+         return ModbusTcpTryProcessAdu(handle, request, response);
 
       default:
          SDeviceAssert(false);
-         return 0;
+         return false;
    }
 }

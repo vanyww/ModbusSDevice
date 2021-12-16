@@ -6,21 +6,14 @@
 
 typedef struct
 {
-   uint8_t FunctionCode;
-   uint8_t FunctionSpecificData[];
-} ModbusCommonPdu;
+   const void *RequestContext;
+} ModbusProcessingParameters;
 
-typedef struct
-{
-   const void *RequestParameters;
-   size_t PduSize;
-} ModbusCommonRequestProcessingData;
-
-typedef struct
-{
-   const void *RequestParameters;
-   size_t FunctionSpecificDataSize;
-} ModbusFunctionProcessingData;
-
-size_t ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *, ModbusCommonRequestProcessingData *);
-size_t ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *, ModbusSDeviceStatus);
+bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *,
+                      ModbusProcessingParameters,
+                      ModbusSDeviceRequest *,
+                      ModbusSDeviceResponse *);
+bool ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *,
+                              ModbusSDeviceStatus,
+                              ModbusSDeviceRequest *,
+                              ModbusSDeviceResponse *);

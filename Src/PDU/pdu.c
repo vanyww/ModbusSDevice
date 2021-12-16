@@ -1,6 +1,6 @@
 #include "pdu.h"
-#include "03Function/03_function.h"
-#include "16Function/16_function.h"
+#include "Functions/03Function/03_function.h"
+#include "Functions/16Function/16_function.h"
 
 #define __MODBUS_EXCEPTION_FLAG ((uint8_t)0x80)
 
@@ -8,7 +8,13 @@ typedef struct
 {
    uint8_t FunctionCode;
    uint8_t ExceptionCode;
-} ExceptionPdu;
+} ModbusExceptionPdu;
+
+typedef struct
+{
+   uint8_t FunctionCode;
+   uint8_t FunctionSpecificData[];
+} ModbusCommonPdu;
 
 /* function codes that are implemented */
 typedef enum
@@ -17,10 +23,21 @@ typedef enum
    FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS = 0x10
 } FunctionCode;
 
-size_t ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle, ModbusCommonRequestProcessingData *processingData)
+bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle,
+                      ModbusProcessingParameters parameters,
+                      ModbusSDeviceRequest *request,
+                      ModbusSDeviceResponse *response)
 {
-   ModbusCommonPdu *requestPdu = handle->Dynamic.ReceiveBufferPdu;
-   ModbusSDeviceStatus (* function)(__SDEVICE_HANDLE(Modbus) *, ModbusFunctionProcessingData *, size_t *);
+   if(request->BytesCount < sizeof(ModbusCommonPdu))
+      return false;
+
+   const ModbusCommonPdu *requestPdu = request->Bytes;
+   ModbusCommonPdu *responsePdu = response->Bytes;
+
+   ModbusSDeviceStatus (* function)(__SDEVICE_HANDLE(Modbus) *,
+                                    ModbusProcessingParameters,
+                                    ModbusSDeviceRequest *,
+                                    ModbusSDeviceResponse *);
 
    switch(requestPdu->FunctionCode)
    {
@@ -34,35 +51,47 @@ size_t ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle, ModbusCommonRequestPro
 
       default:
          SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_FUNCTION_CODE_ERROR);
-         return ModbusEncodeExceptionPdu(handle, MODBUS_SDEVICE_STATUS_ILLEGAL_FUNCTION_ERROR);
+         return ModbusEncodeExceptionPdu(handle, MODBUS_SDEVICE_STATUS_ILLEGAL_FUNCTION_ERROR, request, response);
    }
 
-   size_t functionReplySize;
+   ModbusSDeviceRequest requestFunctionSpecificData =
+   {
+      .Bytes = &requestPdu->FunctionSpecificData,
+      .BytesCount = request->BytesCount - sizeof(ModbusCommonPdu)
+   };
+   ModbusSDeviceResponse responseFunctionSpecificData =
+   {
+      .Bytes = responsePdu->FunctionSpecificData
+   };
+
    ModbusSDeviceStatus status =
-            function(handle,
-                     &(ModbusFunctionProcessingData)
-                     {
-                        .FunctionSpecificDataSize = processingData->PduSize - sizeof(ModbusCommonPdu),
-                        .RequestParameters = processingData->RequestParameters
-                     },
-                     &functionReplySize);
+            function(handle, parameters, &requestFunctionSpecificData, &responseFunctionSpecificData);
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
-      return ModbusEncodeExceptionPdu(handle, status);
+   {
+      if(status == MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR)
+         return false;
 
-   ExceptionPdu *replyPdu = handle->Dynamic.TransmitBufferPdu;
-   replyPdu->FunctionCode = requestPdu->FunctionCode;
+      return ModbusEncodeExceptionPdu(handle, status, request, response);
+   }
 
-   return functionReplySize + sizeof(ModbusCommonPdu);
+   responsePdu->FunctionCode = requestPdu->FunctionCode;
+
+   response->BytesCount = responseFunctionSpecificData.BytesCount + sizeof(ModbusCommonPdu);
+   return true;
 }
 
-size_t ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *handle, ModbusSDeviceStatus exceptionCode)
+bool ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *handle,
+                              ModbusSDeviceStatus exceptionCode,
+                              ModbusSDeviceRequest *request,
+                              ModbusSDeviceResponse *response)
 {
-   ModbusCommonPdu *requestPdu = handle->Dynamic.ReceiveBufferPdu;
-   ExceptionPdu *replyPdu = handle->Dynamic.TransmitBufferPdu;
+   const ModbusCommonPdu *requestPdu = request->Bytes;
+   ModbusExceptionPdu *responsePdu = response->Bytes;
 
-   replyPdu->FunctionCode = requestPdu->FunctionCode | __MODBUS_EXCEPTION_FLAG;
-   replyPdu->ExceptionCode = exceptionCode;
+   responsePdu->FunctionCode = requestPdu->FunctionCode | __MODBUS_EXCEPTION_FLAG;
+   responsePdu->ExceptionCode = exceptionCode;
 
-   return sizeof(ExceptionPdu);
+   response->BytesCount = sizeof(ModbusExceptionPdu);
+   return true;
 }

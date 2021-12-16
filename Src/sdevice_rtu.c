@@ -1,4 +1,4 @@
-#include "../Inc/ModbusSDevice/RTU/rtu_defs.h"
+#include "../Inc/ModbusSDevice/rtu_defs.h"
 #include "../Inc/ModbusSDevice/core.h"
 
 #include <memory.h>

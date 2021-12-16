@@ -2,7 +2,7 @@
 #include "../../Device/test_device.h"
 #include "../../Device/Mock/Assertation/mock_assert.h"
 #include "../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
-#include "ModbusSDevice/RTU/rtu_defs.h"
+#include "ModbusSDevice/rtu_defs.h"
 
 bool TestSlaveAddressSettingSet(void)
 {

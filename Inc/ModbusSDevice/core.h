@@ -5,6 +5,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define __MODBUS_SDEVICE_IS_VALID_TYPE(type) (                                                                         \
+{                                                                                                                      \
+   __typeof__(type) _type = type;                                                                                      \
+   _type == MODBUS_SDEVICE_TYPE_RTU ||                                                                                 \
+   _type == MODBUS_SDEVICE_TYPE_TCP;                                                                                   \
+})
+
 typedef enum
 {
    MODBUS_SDEVICE_STATUS_OK                                            = 0x00,
@@ -42,21 +49,30 @@ typedef struct
    uint16_t RegisterAddress;
 } ModbusSDeviceOperationParameters;
 
+typedef struct
+{
+   const void *Bytes;
+   const size_t BytesCount;
+} ModbusSDeviceRequest;
+
+typedef struct
+{
+   void *Bytes;
+   size_t BytesCount;
+} ModbusSDeviceResponse;
+
 /* Satty's interface start */
 
 __SDEVICE_HANDLE_FORWARD_DECLARATION(Modbus);
 
 typedef struct
 {
-   void *Context;
    ModbusSDeviceStatus (*ReadRegistersFunction)(__SDEVICE_HANDLE(Modbus) *,
                                                 ModbusSDeviceRegister *,
                                                 const ModbusSDeviceOperationParameters *);
    ModbusSDeviceStatus (*WriteRegistersFunction)(__SDEVICE_HANDLE(Modbus) *,
                                                  const ModbusSDeviceRegister *,
                                                  const ModbusSDeviceOperationParameters *);
-   void *TransmitBuffer;
-   void *ReceiveBuffer;
    ModbusSDeviceType Type;
 } __SDEVICE_CONSTANT_DATA(Modbus);
 
@@ -73,13 +89,7 @@ typedef union
    ModbusSDeviceTcpSettings Tcp;
 } __SDEVICE_SETTINGS_DATA(Modbus);
 
-typedef struct
-{
-   void *ReceiveBufferPdu;
-   void *ReceiveBufferFunctionSpecificData;
-   void *TransmitBufferPdu;
-   void *TransmitBufferFunctionSpecificData;
-} __SDEVICE_DYNAMIC_DATA(Modbus);
+typedef struct { } __SDEVICE_DYNAMIC_DATA(Modbus);
 
 __SDEVICE_HANDLE_DEFINITION(Modbus);
 
@@ -97,4 +107,4 @@ typedef enum
 
 /* Satty's interface end */
 
-size_t ModbusSDeviceProcessRequest(__SDEVICE_HANDLE(Modbus) *, size_t);
+bool ModbusSDeviceTryProcessRequest(__SDEVICE_HANDLE(Modbus) *, ModbusSDeviceRequest *, ModbusSDeviceResponse *);
