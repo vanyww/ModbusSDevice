@@ -3,7 +3,7 @@
 #include "../../../../Device/Mock/Assertation/mock_assert.h"
 #include "../../../../Device/Mock/Functions/mock_functions.h"
 #include "../../../../Device/Mock/RuntimeError/mock_handle_runtime_error.h"
-#include "ModbusSDevice/RTU/rtu_defs.h"
+#include "ModbusSDevice/rtu_defs.h"
 
 #include <memory.h>
 
@@ -15,14 +15,16 @@ bool TestTcpWriteOneRequest(void)
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x09, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01 };
+   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
+   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
-   size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
-
-   if(replySize != sizeof(expectedReply))
+   if(ModbusSDeviceTryProcessRequest(&handle, &requestData, &responseData) != true)
       return false;
 
-   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
+   if(responseData.BytesCount != sizeof(expectedReply))
+      return false;
+
+   if(memcmp(expectedReply, responseData.Bytes, responseData.BytesCount) != 0)
       return false;
 
    if(MockWriteRegisters[0].AsValue != 0x1122)
@@ -45,14 +47,16 @@ bool TestTcpWriteMultipleRequest(void)
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x0B, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02 };
+   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
+   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   memcpy(handle.Constant->ReceiveBuffer, request, sizeof(request));
-   size_t replySize = ModbusSDeviceProcessRequest(&handle, sizeof(request));
-
-   if(replySize != sizeof(expectedReply))
+   if(ModbusSDeviceTryProcessRequest(&handle, &requestData, &responseData) != true)
       return false;
 
-   if(memcmp(expectedReply, handle.Constant->TransmitBuffer, replySize) != 0)
+   if(responseData.BytesCount != sizeof(expectedReply))
+      return false;
+
+   if(memcmp(expectedReply, responseData.Bytes, responseData.BytesCount) != 0)
       return false;
 
    if(MockWriteRegisters[0].AsValue != 0x1122)
