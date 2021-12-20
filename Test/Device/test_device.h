@@ -1,5 +1,7 @@
 #pragma once
 
-#include "ModbusSDevice/core.h"
+#include "ModbusSDevice/core_rtu.h"
+#include "ModbusSDevice/core_tcp.h"
 
-void CreateModbusSDevice(ModbusSDeviceType, __SDEVICE_HANDLE(Modbus) *);
+void CreateModbusRtuSDevice(__SDEVICE_HANDLE(ModbusRtu) *);
+void CreateModbusTcpSDevice(__SDEVICE_HANDLE(ModbusTcp) *);

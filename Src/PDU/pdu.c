@@ -23,7 +23,7 @@ typedef enum
    FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS = 0x10
 } FunctionCode;
 
-bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle,
+bool ModbusProcessPdu(SDeviceCommonHandle *handle,
                       ModbusProcessingParameters parameters,
                       ModbusSDeviceRequest *request,
                       ModbusSDeviceResponse *response)
@@ -34,7 +34,7 @@ bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle,
    const ModbusCommonPdu *requestPdu = request->Bytes;
    ModbusCommonPdu *responsePdu = response->Bytes;
 
-   ModbusSDeviceStatus (* function)(__SDEVICE_HANDLE(Modbus) *,
+   ModbusSDeviceStatus (* function)(SDeviceCommonHandle *,
                                     ModbusProcessingParameters,
                                     ModbusSDeviceRequest *,
                                     ModbusSDeviceResponse *);
@@ -81,7 +81,7 @@ bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *handle,
    return true;
 }
 
-bool ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *handle,
+bool ModbusEncodeExceptionPdu(SDeviceCommonHandle *handle,
                               ModbusSDeviceStatus exceptionCode,
                               ModbusSDeviceRequest *request,
                               ModbusSDeviceResponse *response)

@@ -1,6 +1,4 @@
 #include "test_device.h"
-#include "ModbusSDevice/rtu_defs.h"
-#include "ModbusSDevice/tcp_defs.h"
 #include "Mock/Functions/mock_functions.h"
 
 #include <memory.h>
@@ -8,19 +6,32 @@
 #define __MODBUS_MAX_BUFFER_SIZE (__MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE > __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE ?      \
                                   __MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE : __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE)
 
-static __SDEVICE_CONSTANT_DATA(Modbus) ConstantData =
+static __SDEVICE_CONSTANT_DATA(ModbusRtu) RtuConstantData =
 {
-   .ReadRegistersFunction = ReadRegistersMock,
-   .WriteRegistersFunction = WriteRegistersMock,
+   .ModbusCommon.ReadRegistersFunction = ReadRegistersMock,
+   .ModbusCommon.WriteRegistersFunction = WriteRegistersMock,
 };
 
-void CreateModbusSDevice(ModbusSDeviceType type, __SDEVICE_HANDLE(Modbus) *handle)
+static __SDEVICE_CONSTANT_DATA(ModbusTcp) TcpConstantData =
+{
+   .ModbusCommon.ReadRegistersFunction = ReadRegistersMock,
+   .ModbusCommon.WriteRegistersFunction = WriteRegistersMock,
+};
+
+void CreateModbusRtuSDevice(__SDEVICE_HANDLE(ModbusRtu) *handle)
 {
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
 
-   ConstantData.Type = type;
+   handle->Constant = &RtuConstantData;
+   __SDEVICE_INITIALIZE_HANDLE(ModbusRtu)(handle);
+}
 
-   handle->Constant = &ConstantData;
-   __SDEVICE_INITIALIZE_HANDLE(Modbus)(handle);
+void CreateModbusTcpSDevice(__SDEVICE_HANDLE(ModbusTcp) *handle)
+{
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+
+   handle->Constant = &TcpConstantData;
+   __SDEVICE_INITIALIZE_HANDLE(ModbusTcp)(handle);
 }

@@ -14,7 +14,7 @@ typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
    uint16_t WrittenRegistersCount;
 } ModbusFunction16ResponseData;
 
-ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *handle,
+ModbusSDeviceStatus ModbusProcess16FunctionRequest(SDeviceCommonHandle *handle,
                                                    ModbusProcessingParameters parameters,
                                                    ModbusSDeviceRequest *request,
                                                    ModbusSDeviceResponse *response)
@@ -25,8 +25,8 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
    }
 
-   const ModbusFunction16RequestData *requestData = request->Bytes;
-   ModbusFunction16ResponseData *responseData = response->Bytes;
+   const ModbusFunction16RequestData *requestData = (const ModbusFunction16RequestData *)request->Bytes;
+   ModbusFunction16ResponseData *responseData = (ModbusFunction16ResponseData *)response->Bytes;
 
    if(requestData->BytesToFollow / sizeof(ModbusSDeviceRegister) != requestData->RegistersToWriteCount ||
       requestData->BytesToFollow % sizeof(ModbusSDeviceRegister) != 0                                  ||
@@ -36,15 +36,17 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
    }
 
+   const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
+
    ModbusSDeviceStatus status =
-            handle->Constant->WriteRegistersFunction(handle,
-                                                     requestData->RegistersBuffer,
-                                                     &(ModbusSDeviceOperationParameters)
-                                                     {
-                                                        .RegisterAddress = requestData->DataRegisterAddress,
-                                                        .RegistersCount = requestData->RegistersToWriteCount,
-                                                        .RequestContext = parameters.RequestContext
-                                                     });
+            commonConstant->WriteRegistersFunction(handle,
+                                                   requestData->RegistersBuffer,
+                                                   &(ModbusSDeviceOperationParameters)
+                                                   {
+                                                      .RegisterAddress = requestData->DataRegisterAddress,
+                                                      .RegistersCount = requestData->RegistersToWriteCount,
+                                                      .RequestContext = parameters.RequestContext
+                                                   });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
    {

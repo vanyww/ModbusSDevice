@@ -5,7 +5,7 @@
 ModbusSDeviceRegister MockReadRegisters[__MOCK_REGISTERS_COUNT];
 ModbusSDeviceRegister MockWriteRegisters[__MOCK_REGISTERS_COUNT];
 
-ModbusSDeviceStatus ReadRegistersMock(__SDEVICE_HANDLE(Modbus) *handle,
+ModbusSDeviceStatus ReadRegistersMock(SDeviceCommonHandle *handle,
                                       ModbusSDeviceRegister *registers,
                                       const ModbusSDeviceOperationParameters *parameters)
 {
@@ -19,7 +19,7 @@ ModbusSDeviceStatus ReadRegistersMock(__SDEVICE_HANDLE(Modbus) *handle,
    return MODBUS_SDEVICE_STATUS_OK;
 }
 
-ModbusSDeviceStatus WriteRegistersMock(__SDEVICE_HANDLE(Modbus) *handle,
+ModbusSDeviceStatus WriteRegistersMock(SDeviceCommonHandle *handle,
                                        const ModbusSDeviceRegister *registers,
                                        const ModbusSDeviceOperationParameters *parameters)
 {

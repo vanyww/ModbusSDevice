@@ -15,7 +15,7 @@ typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
    ModbusSDeviceRegister RegistersBuffer[];
 } ModbusFunction03ResponseData;
 
-ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *handle,
+ModbusSDeviceStatus ModbusProcess03FunctionRequest(SDeviceCommonHandle *handle,
                                                    ModbusProcessingParameters parameters,
                                                    ModbusSDeviceRequest *request,
                                                    ModbusSDeviceResponse *response)
@@ -26,8 +26,8 @@ ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
    }
 
-   const ModbusFunction03RequestData *requestData = request->Bytes;
-   ModbusFunction03ResponseData *responseData = response->Bytes;
+   const ModbusFunction03RequestData *requestData = (const ModbusFunction03RequestData *)request->Bytes;
+   ModbusFunction03ResponseData *responseData = (ModbusFunction03ResponseData *)response->Bytes;
 
    if(requestData->RegistersToReadCount > __MODBUS_FUNCTION_03_MAX_REGISTERS_COUNT)
    {
@@ -35,15 +35,17 @@ ModbusSDeviceStatus ModbusProcess03FunctionRequest(__SDEVICE_HANDLE(Modbus) *han
       return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
    }
 
+   const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
+
    ModbusSDeviceStatus status =
-            handle->Constant->ReadRegistersFunction(handle,
-                                                    responseData->RegistersBuffer,
-                                                    &(ModbusSDeviceOperationParameters)
-                                                    {
-                                                       .RegisterAddress = requestData->DataRegisterAddress,
-                                                       .RegistersCount = requestData->RegistersToReadCount,
-                                                       .RequestContext = parameters.RequestContext
-                                                    });
+            commonConstant->ReadRegistersFunction(handle,
+                                                  responseData->RegistersBuffer,
+                                                  &(ModbusSDeviceOperationParameters)
+                                                  {
+                                                     .RegisterAddress = requestData->DataRegisterAddress,
+                                                     .RegistersCount = requestData->RegistersToReadCount,
+                                                     .RequestContext = parameters.RequestContext
+                                                  });
 
    if(status != MODBUS_SDEVICE_STATUS_OK)
    {
