@@ -1,7 +1,6 @@
-#include "adu.h"
+#include "../Inc/ModbusSDevice/core_rtu.h"
 #include "CRC/modbus_crc.h"
-#include "../../PDU/pdu.h"
-#include "../../../Inc/ModbusSDevice/rtu_defs.h"
+#include "PDU/pdu.h"
 
 #define __MODBUS_RTU_EMPTY_ADU_SIZE (sizeof(__MODBUS_RTU_ADU(0)))
 #define __MODBUS_RTU_ADU(pdu_size)                                                                                     \
@@ -12,30 +11,34 @@ struct __attribute__((packed))                                                  
    ModbusRtuCrcType Crc16;                                                                                             \
 }
 
-bool ModbusRtuTryProcessAdu(__SDEVICE_HANDLE(Modbus) *handle,
-                            ModbusSDeviceRequest *request,
-                            ModbusSDeviceResponse *response)
+bool ModbusRtuSDeviceTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle,
+                                       ModbusSDeviceRequest *request,
+                                       ModbusSDeviceResponse *response)
 {
-   if(request->BytesCount < __MODBUS_RTU_EMPTY_ADU_SIZE ||
-      request->BytesCount > __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE)
+   SDeviceAssert(handle != NULL);
+   SDeviceAssert(request != NULL);
+   SDeviceAssert(response != NULL);
+   SDeviceAssert(handle->IsInitialized == true);
+
+   if(request->BytesCount < __MODBUS_RTU_EMPTY_ADU_SIZE || request->BytesCount > __MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE)
    {
       SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
       return false;
    }
 
    const __MODBUS_RTU_ADU(request->BytesCount - __MODBUS_RTU_EMPTY_ADU_SIZE) *requestAdu = request->Bytes;
-   ModbusSDeviceRtuRequestType requestType;
+   ModbusRtuSDeviceRequestType requestType;
 
-   if(requestAdu->SlaveAddress != handle->Settings.Rtu.SlaveAddress)
+   if(requestAdu->SlaveAddress != handle->Settings.SlaveAddress)
    {
-      if(requestAdu->SlaveAddress != __MODBUS_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS)
+      if(requestAdu->SlaveAddress != __MODBUS_RTU_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS)
          return false;
 
-      requestType = MODBUS_SDEVICE_RTU_REQUEST_TYPE_BROADCAST;
+      requestType = MODBUS_RTU_SDEVICE_REQUEST_TYPE_BROADCAST;
    }
    else
    {
-      requestType = MODBUS_SDEVICE_RTU_REQUEST_TYPE_NORMAL;
+      requestType = MODBUS_RTU_SDEVICE_REQUEST_TYPE_NORMAL;
    }
 
    if(requestAdu->Crc16 != ModbusRtuCrcCompute(request->Bytes, request->BytesCount - sizeof(ModbusRtuCrcType)))
@@ -55,21 +58,25 @@ bool ModbusRtuTryProcessAdu(__SDEVICE_HANDLE(Modbus) *handle,
    };
    ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusSDeviceRtuRequestData){ .RequestType = requestType }
+      .RequestContext = &(ModbusRtuSDeviceRequestData)
+      {
+         . ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_RTU,
+         .RequestType = requestType
+      }
    };
 
-   if(ModbusProcessPdu(handle, processingParameters, &requestPdu, &responsePdu) != true)
+   if(ModbusProcessPdu((SDeviceCommonHandle *)handle, processingParameters, &requestPdu, &responsePdu) != true)
       return false;
 
    __MODBUS_RTU_ADU(responsePdu.BytesCount) *responseAdu = response->Bytes;
 
-   if(requestType == MODBUS_SDEVICE_RTU_REQUEST_TYPE_BROADCAST)
+   if(requestType == MODBUS_RTU_SDEVICE_REQUEST_TYPE_BROADCAST)
    {
       response->BytesCount = 0;
       return true;
    }
 
-   responseAdu->SlaveAddress = handle->Settings.Rtu.SlaveAddress;
+   responseAdu->SlaveAddress = handle->Settings.SlaveAddress;
    responseAdu->Crc16 = ModbusRtuCrcCompute(response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
 
    response->BytesCount = sizeof(*responseAdu);

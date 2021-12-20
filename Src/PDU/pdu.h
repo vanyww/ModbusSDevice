@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Inc/ModbusSDevice/core.h"
+#include "../../Inc/ModbusSDevice/common.h"
 
 #define __MODBUS_MAX_PDU_SIZE 253U
 
@@ -9,11 +9,11 @@ typedef struct
    const void *RequestContext;
 } ModbusProcessingParameters;
 
-bool ModbusProcessPdu(__SDEVICE_HANDLE(Modbus) *,
+bool ModbusProcessPdu(SDeviceCommonHandle *,
                       ModbusProcessingParameters,
                       ModbusSDeviceRequest *,
                       ModbusSDeviceResponse *);
-bool ModbusEncodeExceptionPdu(__SDEVICE_HANDLE(Modbus) *,
+bool ModbusEncodeExceptionPdu(SDeviceCommonHandle *,
                               ModbusSDeviceStatus,
                               ModbusSDeviceRequest *,
                               ModbusSDeviceResponse *);
