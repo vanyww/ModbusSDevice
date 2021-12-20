@@ -5,8 +5,8 @@
 
 bool TestRtuHandleInitialization(void)
 {
-   __SDEVICE_HANDLE(Modbus) handle = { 0 };
-   CreateModbusSDevice(MODBUS_SDEVICE_TYPE_RTU, &handle);
+   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
+   CreateModbusRtuSDevice(&handle);
 
    if(handle.IsInitialized != true)
       return false;
@@ -22,8 +22,8 @@ bool TestRtuHandleInitialization(void)
 
 bool TestTcpHandleInitialization(void)
 {
-   __SDEVICE_HANDLE(Modbus) handle = { 0 };
-   CreateModbusSDevice(MODBUS_SDEVICE_TYPE_TCP, &handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
+   CreateModbusTcpSDevice(&handle);
 
    if(handle.IsInitialized != true)
       return false;
