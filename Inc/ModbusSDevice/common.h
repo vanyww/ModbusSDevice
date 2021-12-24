@@ -38,6 +38,11 @@ typedef enum
    MODBUS_SDEVICE_MODBUS_TYPE_TCP
 } ModbusSDeviceModbusType;
 
+typedef struct
+{
+   ModbusSDeviceModbusType ModbusType;
+} ModbusSDeviceRequestData;
+
 typedef union __attribute__((packed, scalar_storage_order("big-endian")))
 {
    uint16_t AsValue;
@@ -57,7 +62,7 @@ typedef struct
    size_t BytesCount;
 } ModbusSDeviceRequest;
 
-typedef struct
+typedef struct __attribute__((scalar_storage_order("big-endian")))
 {
    void *Bytes;
    size_t BytesCount;

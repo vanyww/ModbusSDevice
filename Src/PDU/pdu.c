@@ -55,14 +55,8 @@ bool ModbusProcessPdu(SDeviceCommonHandle *handle,
    }
 
    ModbusSDeviceRequest requestFunctionSpecificData =
-   {
-      .Bytes = &requestPdu->FunctionSpecificData,
-      .BytesCount = request->BytesCount - sizeof(ModbusCommonPdu)
-   };
-   ModbusSDeviceResponse responseFunctionSpecificData =
-   {
-      .Bytes = responsePdu->FunctionSpecificData
-   };
+            { requestPdu->FunctionSpecificData, request->BytesCount - sizeof(ModbusCommonPdu) };
+   ModbusSDeviceResponse responseFunctionSpecificData = { responsePdu->FunctionSpecificData };
 
    ModbusSDeviceStatus status =
             function(handle, parameters, &requestFunctionSpecificData, &responseFunctionSpecificData);

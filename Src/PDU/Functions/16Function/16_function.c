@@ -37,7 +37,6 @@ ModbusSDeviceStatus ModbusProcess16FunctionRequest(SDeviceCommonHandle *handle,
    }
 
    const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
-
    ModbusSDeviceStatus status =
             commonConstant->WriteRegistersFunction(handle,
                                                    requestData->RegistersBuffer,

@@ -47,20 +47,13 @@ bool ModbusRtuSDeviceTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle,
       return false;
    }
 
-   ModbusSDeviceRequest requestPdu =
-   {
-      .Bytes = &requestAdu->PduBytes,
-      .BytesCount = sizeof(requestAdu->PduBytes)
-   };
-   ModbusSDeviceResponse responsePdu =
-   {
-      .Bytes = &((__MODBUS_RTU_ADU(0) *)response->Bytes)->PduBytes
-   };
+   ModbusSDeviceRequest requestPdu = { requestAdu->PduBytes, sizeof(requestAdu->PduBytes) };
+   ModbusSDeviceResponse responsePdu = { ((__MODBUS_RTU_ADU(0) *)response->Bytes)->PduBytes };
    ModbusProcessingParameters processingParameters =
    {
       .RequestContext = &(ModbusRtuSDeviceRequestData)
       {
-         . ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_RTU,
+         .Common.ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_RTU,
          .RequestType = requestType
       }
    };

@@ -5,7 +5,7 @@
 
 #define __MODBUS_TCP_PROTOCOL_ID 0x0000
 
-typedef struct  __attribute__((scalar_storage_order("big-endian"), packed))
+typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
 {
    uint16_t TransactionId;
    uint16_t ProtocolId;
@@ -50,7 +50,7 @@ bool ModbusTcpSDeviceTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle,
    SDeviceAssert(response != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   const ModbusTcpAduData *mbapHeader = (ModbusTcpAduData *)handle->Dynamic.MbapHeaderBuffer;
+   ModbusTcpAduData *mbapHeader = (ModbusTcpAduData *)handle->Dynamic.MbapHeaderBuffer;
 
    if(request->BytesCount > __MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE - __MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE ||
       request->BytesCount + sizeof(((ModbusTcpAduData *)NULL)->SlaveAddress) != mbapHeader->PacketSize)
@@ -61,15 +61,12 @@ bool ModbusTcpSDeviceTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle,
 
    ModbusTcpAduData *responseAdu = (ModbusTcpAduData *)response->Bytes;
 
-   ModbusSDeviceResponse responsePdu =
-   {
-      .Bytes = &responseAdu->PduBytes
-   };
+   ModbusSDeviceResponse responsePdu = { responseAdu->PduBytes };
    ModbusProcessingParameters processingParameters =
    {
       .RequestContext = &(ModbusTcpSDeviceRequestData)
       {
-         .ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_TCP,
+         .Common.ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_TCP,
          .SlaveAddress = mbapHeader->SlaveAddress
       }
    };

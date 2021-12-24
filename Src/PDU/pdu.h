@@ -13,6 +13,7 @@ bool ModbusProcessPdu(SDeviceCommonHandle *,
                       ModbusProcessingParameters,
                       ModbusSDeviceRequest *,
                       ModbusSDeviceResponse *);
+
 bool ModbusEncodeExceptionPdu(SDeviceCommonHandle *,
                               ModbusSDeviceStatus,
                               ModbusSDeviceRequest *,
