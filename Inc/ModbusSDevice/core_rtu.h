@@ -40,7 +40,7 @@ typedef enum
 
 typedef struct
 {
-   ModbusSDeviceModbusType ModbusType;
+   ModbusSDeviceRequestData Common;
    ModbusRtuSDeviceRequestType RequestType;
 } ModbusRtuSDeviceRequestData;
 
@@ -58,7 +58,7 @@ typedef struct
    uint8_t SlaveAddress;
 } ModbusRtuSDeviceRtuSettings;
 
-typedef union
+typedef struct
 {
    uint8_t SlaveAddress;
 } __SDEVICE_SETTINGS_DATA(ModbusRtu);

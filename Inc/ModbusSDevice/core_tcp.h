@@ -7,7 +7,7 @@
 
 typedef struct
 {
-   ModbusSDeviceModbusType ModbusType;
+   ModbusSDeviceRequestData Common;
    uint8_t SlaveAddress;
 } ModbusTcpSDeviceRequestData;
 
@@ -20,7 +20,7 @@ typedef struct
    __SDEVICE_CONSTANT_DATA(Modbus) ModbusCommon;
 } __SDEVICE_CONSTANT_DATA(ModbusTcp);
 
-typedef union { } __SDEVICE_SETTINGS_DATA(ModbusTcp);
+typedef struct { } __SDEVICE_SETTINGS_DATA(ModbusTcp);
 
 typedef struct
 {
