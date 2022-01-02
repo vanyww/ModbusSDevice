@@ -2,7 +2,7 @@
 
 #include "../../pdu.h"
 
-ModbusSDeviceStatus ModbusProcess16FunctionRequest(SDeviceCommonHandle *,
-                                                   ModbusProcessingParameters,
-                                                   ModbusSDeviceRequest *,
-                                                   ModbusSDeviceResponse *);
+ModbusStatus ProcessModbus16FunctionRequest(SDeviceCommonHandle *,
+                                            ModbusProcessingParameters,
+                                            ModbusRequest *,
+                                            ModbusResponse *);

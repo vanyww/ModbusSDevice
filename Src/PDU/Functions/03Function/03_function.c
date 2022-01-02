@@ -1,59 +1,57 @@
 #include "03_function.h"
 
-#define __MODBUS_FUNCTION_03_MAX_REGISTERS_COUNT                                                                       \
-   ((__MODBUS_MAX_PDU_SIZE - sizeof(ModbusFunction03ResponseData)) / sizeof(ModbusSDeviceRegister))
+#define __FUNCTION_03_MAX_REGISTERS_COUNT                                                                              \
+   ((__MODBUS_MAX_PDU_SIZE - sizeof(Function03ResponseData)) / sizeof(ModbusRegister))
 
 typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
 {
    uint16_t DataRegisterAddress;
    uint16_t RegistersToReadCount;
-} ModbusFunction03RequestData;
+} Function03RequestData;
 
 typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
 {
    uint8_t FollowingDataBytes;
-   ModbusSDeviceRegister RegistersBuffer[];
-} ModbusFunction03ResponseData;
+   ModbusRegister RegistersBuffer[];
+} Function03ResponseData;
 
-ModbusSDeviceStatus ModbusProcess03FunctionRequest(SDeviceCommonHandle *handle,
-                                                   ModbusProcessingParameters parameters,
-                                                   ModbusSDeviceRequest *request,
-                                                   ModbusSDeviceResponse *response)
+ModbusStatus ProcessModbus03FunctionRequest(SDeviceCommonHandle *handle,
+                                            ModbusProcessingParameters parameters,
+                                            ModbusRequest *request,
+                                            ModbusResponse *response)
 {
-   if(request->BytesCount != sizeof(ModbusFunction03RequestData))
+   if(request->Size != sizeof(Function03RequestData))
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
-      return MODBUS_SDEVICE_STATUS_NON_MODBUS_ERROR;
+      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
+      return MODBUS_STATUS_NON_MODBUS_ERROR;
    }
 
-   const ModbusFunction03RequestData *requestData = (const ModbusFunction03RequestData *)request->Bytes;
-   ModbusFunction03ResponseData *responseData = (ModbusFunction03ResponseData *)response->Bytes;
-
-   if(requestData->RegistersToReadCount > __MODBUS_FUNCTION_03_MAX_REGISTERS_COUNT)
+   const Function03RequestData *requestData = (const Function03RequestData *)request->Bytes;
+   Function03ResponseData *responseData = (Function03ResponseData *)response->Bytes;
+   if(requestData->RegistersToReadCount > __FUNCTION_03_MAX_REGISTERS_COUNT)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_REGISTER_COUNT_ERROR);
-      return MODBUS_SDEVICE_STATUS_ILLEGAL_DATA_ERROR;
+      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REGISTERS_COUNT);
+      return MODBUS_STATUS_ILLEGAL_DATA_ERROR;
    }
 
    const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
-   ModbusSDeviceStatus status =
-            commonConstant->ReadRegistersFunction(handle,
-                                                  responseData->RegistersBuffer,
-                                                  &(ModbusSDeviceOperationParameters)
-                                                  {
-                                                     .RegisterAddress = requestData->DataRegisterAddress,
-                                                     .RegistersCount = requestData->RegistersToReadCount,
-                                                     .RequestContext = parameters.RequestContext
-                                                  });
+   ModbusStatus status = commonConstant->ReadRegisters(handle,
+                                                       responseData->RegistersBuffer,
+                                                       &(ModbusOperationParameters)
+                                                       {
+                                                          .RegisterAddress = requestData->DataRegisterAddress,
+                                                          .RegistersCount = requestData->RegistersToReadCount,
+                                                          .RequestContext = parameters.RequestContext
+                                                       });
 
-   if(status != MODBUS_SDEVICE_STATUS_OK)
+   if(status != MODBUS_STATUS_OK)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REGISTER_ACCESS_ERROR);
+      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_REGISTER_ACCESS_FAIL);
       return status;
    }
 
-   responseData->FollowingDataBytes = requestData->RegistersToReadCount * sizeof(ModbusSDeviceRegister);
+   responseData->FollowingDataBytes = requestData->RegistersToReadCount * sizeof(ModbusRegister);
 
-   response->BytesCount = sizeof(ModbusFunction03ResponseData) + responseData->FollowingDataBytes;
-   return MODBUS_SDEVICE_STATUS_OK;
+   response->Size = sizeof(Function03ResponseData) + responseData->FollowingDataBytes;
+   return MODBUS_STATUS_OK;
 }

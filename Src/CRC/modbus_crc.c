@@ -38,7 +38,7 @@ static const ModbusRtuCrcType CrcTable[] =
    0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
 
-ModbusRtuCrcType ModbusRtuCrcCompute(const void *data, size_t length)
+ModbusRtuCrcType ComputeModbusRtuCrc(const void *data, size_t length)
 {
    const uint8_t *bytes = data;
    ModbusRtuCrcType crc = __MODBUS_CRC_16_INITIAL_VALUE;

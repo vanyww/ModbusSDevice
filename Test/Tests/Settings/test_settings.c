@@ -19,7 +19,7 @@ bool TestSlaveAddressSettingSet(void)
       if(status == SDEVICE_SETTING_SET_STATUS_SET_ERROR)
          return false;
 
-      if(address == 0 || address > __MODBUS_RTU_SDEVICE_MAX_VALID_SLAVE_ADDRESS)
+      if(address == 0 || address > __MODBUS_RTU_MAX_VALID_SLAVE_ADDRESS)
       {
          if(status != SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR || WasRuntimeErrorRaised() != true)
             return false;
