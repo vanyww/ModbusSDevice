@@ -5,4 +5,4 @@
 
 typedef uint16_t ModbusRtuCrcType;
 
-ModbusRtuCrcType ModbusRtuCrcCompute(const void *, size_t);
+ModbusRtuCrcType ComputeModbusRtuCrc(const void *, size_t);

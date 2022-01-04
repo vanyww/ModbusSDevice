@@ -3,19 +3,19 @@
 
 #include <memory.h>
 
-#define __MODBUS_MAX_BUFFER_SIZE (__MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE > __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE ?      \
-                                  __MODBUS_SDEVICE_TCP_MAX_MESSAGE_SIZE : __MODBUS_SDEVICE_RTU_MAX_MESSAGE_SIZE)
+#define __MODBUS_MAX_BUFFER_SIZE (__MODBUS_TCP_MAX_MESSAGE_SIZE > __MODBUS_RTU_MAX_MESSAGE_SIZE ?                      \
+                                  __MODBUS_TCP_MAX_MESSAGE_SIZE : __MODBUS_RTU_MAX_MESSAGE_SIZE)
 
 static __SDEVICE_CONSTANT_DATA(ModbusRtu) RtuConstantData =
 {
-   .ModbusCommon.ReadRegistersFunction = ReadRegistersMock,
-   .ModbusCommon.WriteRegistersFunction = WriteRegistersMock,
+   .Common.ReadRegisters = ReadRegistersMock,
+   .Common.WriteRegisters = WriteRegistersMock,
 };
 
 static __SDEVICE_CONSTANT_DATA(ModbusTcp) TcpConstantData =
 {
-   .ModbusCommon.ReadRegistersFunction = ReadRegistersMock,
-   .ModbusCommon.WriteRegistersFunction = WriteRegistersMock,
+   .Common.ReadRegisters = ReadRegistersMock,
+   .Common.WriteRegisters = WriteRegistersMock,
 };
 
 void CreateModbusRtuSDevice(__SDEVICE_HANDLE(ModbusRtu) *handle)

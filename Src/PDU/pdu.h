@@ -9,12 +9,4 @@ typedef struct
    const void *RequestContext;
 } ModbusProcessingParameters;
 
-bool ModbusProcessPdu(SDeviceCommonHandle *,
-                      ModbusProcessingParameters,
-                      ModbusSDeviceRequest *,
-                      ModbusSDeviceResponse *);
-
-bool ModbusEncodeExceptionPdu(SDeviceCommonHandle *,
-                              ModbusSDeviceStatus,
-                              ModbusSDeviceRequest *,
-                              ModbusSDeviceResponse *);
+bool TryProcessModbusPdu(SDeviceCommonHandle *, ModbusProcessingParameters, ModbusRequest *, ModbusResponse *);

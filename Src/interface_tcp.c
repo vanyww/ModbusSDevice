@@ -1,4 +1,5 @@
 #include "../Inc/ModbusSDevice/core_tcp.h"
+
 #include "PDU/pdu.h"
 
 #include <memory.h>
@@ -12,75 +13,66 @@ typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
    uint16_t PacketSize;
    uint8_t SlaveAddress;
    uint8_t PduBytes[];
-} ModbusTcpAduData;
+} TcpAduData;
 
-bool ModbusTcpSDeviceTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle,
-                                          ModbusSDeviceRequest *request,
-                                          size_t *lengthToReceive)
+bool ModbusTcpTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRequest *request, size_t *lengthToReceive)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(request != NULL);
    SDeviceAssert(lengthToReceive != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   if(request->BytesCount != __MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE)
+   if(request->Size != __MODBUS_TCP_MBAP_HEADER_SIZE)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
+      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
       return false;
    }
 
-   const ModbusTcpAduData *requestAdu = (const ModbusTcpAduData *)request->Bytes;
+   const TcpAduData *requestAdu = (const TcpAduData *)request->Bytes;
 
    if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
       return false;
 
-   memcpy(handle->Dynamic.MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE);
+   memcpy(handle->Dynamic.MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
 
    *lengthToReceive = requestAdu->PacketSize;
-
    return true;
 }
 
-bool ModbusTcpSDeviceTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle,
-                                       ModbusSDeviceRequest *request,
-                                       ModbusSDeviceResponse *response)
+bool ModbusTcpTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRequest *request, ModbusResponse *response)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(request != NULL);
    SDeviceAssert(response != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   ModbusTcpAduData *mbapHeader = (ModbusTcpAduData *)handle->Dynamic.MbapHeaderBuffer;
-
-   if(request->BytesCount > __MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE - __MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE ||
-      request->BytesCount + sizeof(((ModbusTcpAduData *)NULL)->SlaveAddress) != mbapHeader->PacketSize)
+   TcpAduData *mbapHeader = (TcpAduData *)handle->Dynamic.MbapHeaderBuffer;
+   if(request->Size > __MODBUS_TCP_MAX_MESSAGE_SIZE - __MODBUS_TCP_MBAP_HEADER_SIZE ||
+      request->Size + __SIZEOF_MEMBER(TcpAduData, SlaveAddress) != mbapHeader->PacketSize)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_SDEVICE_RUNTIME_REQUEST_SIZE_ERROR);
+      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
       return false;
    }
 
-   ModbusTcpAduData *responseAdu = (ModbusTcpAduData *)response->Bytes;
-
-   ModbusSDeviceResponse responsePdu = { responseAdu->PduBytes };
+   TcpAduData *responseAdu = (TcpAduData *)response->Bytes;
+   ModbusResponse responsePdu = { responseAdu->PduBytes };
    ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusTcpSDeviceRequestData)
+      .RequestContext = &(ModbusTcpRequestData)
       {
-         .Common.ModbusType = MODBUS_SDEVICE_MODBUS_TYPE_TCP,
+         .Common.ModbusType = MODBUS_MODBUS_TYPE_TCP,
          .SlaveAddress = mbapHeader->SlaveAddress
       }
    };
 
-   if(ModbusProcessPdu((SDeviceCommonHandle *)handle, processingParameters, request, &responsePdu) != true)
+   if(TryProcessModbusPdu((SDeviceCommonHandle *)handle, processingParameters, request, &responsePdu) != true)
       return false;
 
    responseAdu->ProtocolId = __MODBUS_TCP_PROTOCOL_ID;
    responseAdu->TransactionId = mbapHeader->TransactionId;
    responseAdu->SlaveAddress = mbapHeader->SlaveAddress;
-   responseAdu->PacketSize = responsePdu.BytesCount +
-                             sizeof(ModbusTcpAduData) -
-                             offsetof(ModbusTcpAduData, SlaveAddress);
+   responseAdu->PacketSize = responsePdu.Size + sizeof(TcpAduData) - offsetof(TcpAduData, SlaveAddress);
 
-   response->BytesCount = responsePdu.BytesCount + sizeof(ModbusTcpAduData);
+   response->Size = responsePdu.Size + sizeof(TcpAduData);
    return true;
 }

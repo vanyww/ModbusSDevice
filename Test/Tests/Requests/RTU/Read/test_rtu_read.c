@@ -13,14 +13,14 @@ bool TestRtuReadOneRequest(void)
    CreateModbusRtuSDevice(&handle);
    __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
-   MockReadRegisters[0] = (ModbusSDeviceRegister){ .AsValue = 0xCCBB };
+   MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0xCCBB };
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x01, 0x9D, 0xD1 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x02, 0xCC, 0xBB, 0x88, 0xEF };
-   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   ModbusRequest requestData = { .Bytes = request, .Size = sizeof(request) };
+   ModbusResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   if(ModbusRtuSDeviceTryProcessRequest(&handle, &requestData, &responseData) != true)
+   if(ModbusRtuTryProcessRequest(&handle, &requestData, &responseData) != true)
       return false;
 
    if(WasAssertFailed() != false)
@@ -29,10 +29,10 @@ bool TestRtuReadOneRequest(void)
    if(WasRuntimeErrorRaised() == true)
       return false;
 
-   if(responseData.BytesCount != sizeof(expectedReply))
+   if(responseData.Size != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Bytes, responseData.BytesCount) != 0)
+   if(memcmp(expectedReply, responseData.Bytes, responseData.Size) != 0)
       return false;
 
    return true;
@@ -45,16 +45,16 @@ bool TestRtuReadMultipleRequest(void)
    CreateModbusRtuSDevice(&handle);
    __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
-   MockReadRegisters[0] = (ModbusSDeviceRegister){ .AsValue = 0x1122 };
-   MockReadRegisters[1] = (ModbusSDeviceRegister){ .AsValue = 0x3344 };
-   MockReadRegisters[2] = (ModbusSDeviceRegister){ .AsValue = 0x5566 };
+   MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0x1122 };
+   MockReadRegisters[1] = (ModbusRegister){ .AsValue = 0x3344 };
+   MockReadRegisters[2] = (ModbusRegister){ .AsValue = 0x5566 };
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x03, 0x1C, 0x10 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x06, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0xA1, 0x2F };
-   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   ModbusRequest requestData = { .Bytes = request, .Size = sizeof(request) };
+   ModbusResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   if(ModbusRtuSDeviceTryProcessRequest(&handle, &requestData, &responseData) != true)
+   if(ModbusRtuTryProcessRequest(&handle, &requestData, &responseData) != true)
       return false;
 
    if(WasAssertFailed() != false)
@@ -63,10 +63,10 @@ bool TestRtuReadMultipleRequest(void)
    if(WasRuntimeErrorRaised() == true)
       return false;
 
-   if(responseData.BytesCount != sizeof(expectedReply))
+   if(responseData.Size != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Bytes, responseData.BytesCount) != 0)
+   if(memcmp(expectedReply, responseData.Bytes, responseData.Size) != 0)
       return false;
 
    return true;
@@ -81,10 +81,10 @@ bool TestRtuReadTooManyRequest(void)
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { 0xAA, 0x83, 0x03, 0x70, 0xD1 };
-   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   ModbusRequest requestData = { .Bytes = request, .Size = sizeof(request) };
+   ModbusResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   if(ModbusRtuSDeviceTryProcessRequest(&handle, &requestData, &responseData) != true)
+   if(ModbusRtuTryProcessRequest(&handle, &requestData, &responseData) != true)
       return false;
 
    if(WasAssertFailed() != false)
@@ -93,10 +93,10 @@ bool TestRtuReadTooManyRequest(void)
    if(WasRuntimeErrorRaised() != true)
       return false;
 
-   if(responseData.BytesCount != sizeof(expectedReply))
+   if(responseData.Size != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Bytes, responseData.BytesCount) != 0)
+   if(memcmp(expectedReply, responseData.Bytes, responseData.Size) != 0)
       return false;
 
    return true;
@@ -110,10 +110,10 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
    __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
-   ModbusSDeviceRequest requestData = { .Bytes = request, .BytesCount = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   ModbusRequest requestData = { .Bytes = request, .Size = sizeof(request) };
+   ModbusResponse responseData = { .Bytes = (uint8_t[__MODBUS_RTU_MAX_MESSAGE_SIZE]){ } };
 
-   if(ModbusRtuSDeviceTryProcessRequest(&handle, &requestData, &responseData) != false)
+   if(ModbusRtuTryProcessRequest(&handle, &requestData, &responseData) != false)
       return false;
 
    if(WasAssertFailed() != false)
