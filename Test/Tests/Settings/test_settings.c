@@ -11,17 +11,17 @@ bool TestSlaveAddressSettingSet(void)
    for(size_t i = 0; i <= UINT8_MAX; i++)
    {
       uint8_t address = i;
-      SDeviceSettingSetStatus status = __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &address);
+      SDeviceOperationStatus status = __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &address);
 
       if(WasAssertFailed() == true)
          return false;
 
-      if(status == SDEVICE_SETTING_SET_STATUS_SET_ERROR)
+      if(status == SDEVICE_OPERATION_STATUS_PROCESSING_ERROR)
          return false;
 
       if(address == 0 || address > __MODBUS_RTU_MAX_VALID_SLAVE_ADDRESS)
       {
-         if(status != SDEVICE_SETTING_SET_STATUS_VALIDATION_ERROR || WasRuntimeErrorRaised() != true)
+         if(status != SDEVICE_OPERATION_STATUS_VALIDATION_ERROR || WasRuntimeErrorRaised() != true)
             return false;
       }
       else
