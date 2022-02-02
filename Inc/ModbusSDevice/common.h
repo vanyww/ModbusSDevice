@@ -2,8 +2,6 @@
 
 #include "SDeviceCore/interface.h"
 
-#include <stddef.h>
-
 typedef enum
 {
    MODBUS_STATUS_OK                                            = 0x00,
