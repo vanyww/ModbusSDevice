@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#include "../../Inc/ModbusSDevice/core_rtu.h"
 
-typedef uint16_t ModbusRtuCrcType;
-
-ModbusRtuCrcType ComputeModbusRtuCrc(const void *, size_t);
+ModbusRtuCrcType ComputeModbusRtuCrc(__SDEVICE_HANDLE(ModbusRtu) *, const void *, size_t);

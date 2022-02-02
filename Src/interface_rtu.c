@@ -39,7 +39,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
       requestType = MODBUS_RTU_REQUEST_TYPE_NORMAL;
    }
 
-   if(requestAdu->Crc16 != ComputeModbusRtuCrc(request->Bytes, request->Size - sizeof(ModbusRtuCrcType)))
+   if(requestAdu->Crc16 != ComputeModbusRtuCrc(handle, request->Bytes, request->Size - sizeof(ModbusRtuCrcType)))
    {
       SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_REQUEST_CRC_MISMATCH);
       return false;
@@ -67,7 +67,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
 
    __RTU_ADU(responsePdu.Size) *responseAdu = response->Bytes;
    responseAdu->SlaveAddress = handle->Settings.SlaveAddress;
-   responseAdu->Crc16 = ComputeModbusRtuCrc(response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
+   responseAdu->Crc16 = ComputeModbusRtuCrc(handle, response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
 
    response->Size = sizeof(*responseAdu);
    return true;
