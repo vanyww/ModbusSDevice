@@ -32,6 +32,8 @@
    _address <= __MODBUS_RTU_MAX_VALID_SLAVE_ADDRESS;                                                                   \
 })
 
+typedef uint16_t ModbusRtuCrcType;
+
 typedef enum
 {
    MODBUS_RTU_REQUEST_TYPE_NORMAL,
@@ -51,6 +53,7 @@ __SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
 typedef struct
 {
    __SDEVICE_CONSTANT_DATA(Modbus) Common;
+   ModbusRtuCrcType (* ComputeCrc16)(const void *, size_t);
 } __SDEVICE_CONSTANT_DATA(ModbusRtu);
 
 typedef struct
