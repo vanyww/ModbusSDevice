@@ -53,7 +53,7 @@ __SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
 typedef struct
 {
    __SDEVICE_CONSTANT_DATA(Modbus) Common;
-   ModbusRtuCrcType (* ComputeCrc16)(const void *, size_t);
+   ModbusRtuCrcType (* ComputeCrc16)(__SDEVICE_HANDLE(ModbusRtu) *, const void *, size_t);
 } __SDEVICE_CONSTANT_DATA(ModbusRtu);
 
 typedef struct
