@@ -1,5 +1,6 @@
 #include "modbus_crc.h"
 
+#ifndef __MODBUS_SDEVICE_USE_EXTERN_CRC
 #define __MODBUS_CRC_16_INITIAL_VALUE 0xFFFF
 
 static const ModbusRtuCrcType CrcTable[] =
@@ -37,12 +38,13 @@ static const ModbusRtuCrcType CrcTable[] =
    0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
    0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
+#endif
 
 ModbusRtuCrcType ComputeModbusRtuCrc(__SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t length)
 {
-   if(handle->Constant->ComputeCrc16 != NULL)
-      return handle->Constant->ComputeCrc16(handle, data, length);
-
+#ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
+   return handle->Constant->ComputeCrc16(handle, data, length);
+#else
    const uint8_t *bytes = data;
    ModbusRtuCrcType crc = __MODBUS_CRC_16_INITIAL_VALUE;
    uint8_t index;
@@ -55,4 +57,5 @@ ModbusRtuCrcType ComputeModbusRtuCrc(__SDEVICE_HANDLE(ModbusRtu) *handle, const 
    }
 
    return crc;
+#endif
 }
