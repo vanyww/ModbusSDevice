@@ -23,14 +23,13 @@ typedef enum
 } FunctionCode;
 
 static bool TryEncodeModbusExceptionPdu(SDeviceCommonHandle *handle,
+										uint8_t functionCode,
                                         ModbusStatus exceptionCode,
-                                        ModbusRequest *request,
                                         ModbusResponse *response)
 {
-   const CommonPdu *requestPdu = request->Bytes;
    ExceptionPdu *responsePdu = response->Bytes;
 
-   responsePdu->FunctionCode = requestPdu->FunctionCode | __MODBUS_EXCEPTION_FLAG;
+   responsePdu->FunctionCode = functionCode | __MODBUS_EXCEPTION_FLAG;
    responsePdu->ExceptionCode = exceptionCode;
 
    response->Size = sizeof(ExceptionPdu);
@@ -49,7 +48,8 @@ bool TryProcessModbusPdu(SDeviceCommonHandle *handle,
    CommonPdu *responsePdu = response->Bytes;
 
    ModbusFunction function;
-   switch(requestPdu->FunctionCode)
+   uint8_t functionCode = requestPdu->FunctionCode;
+   switch(functionCode)
    {
       case FUNCTION_CODE_READ_HOLDING_REGISTERS:
          function = ProcessModbus03FunctionRequest;
@@ -61,7 +61,7 @@ bool TryProcessModbusPdu(SDeviceCommonHandle *handle,
 
       default:
          SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_UNIMPLEMENTED_FUNCTION_CODE);
-         return TryEncodeModbusExceptionPdu(handle, MODBUS_STATUS_ILLEGAL_FUNCTION_ERROR, request, response);
+         return TryEncodeModbusExceptionPdu(handle, functionCode, MODBUS_STATUS_ILLEGAL_FUNCTION_ERROR, response);
    }
 
    ModbusRequest requestFunctionData = { requestPdu->FunctionData, request->Size - sizeof(CommonPdu) };
@@ -73,10 +73,10 @@ bool TryProcessModbusPdu(SDeviceCommonHandle *handle,
       if(status == MODBUS_STATUS_NON_MODBUS_ERROR)
          return false;
 
-      return TryEncodeModbusExceptionPdu(handle, status, request, response);
+      return TryEncodeModbusExceptionPdu(handle, functionCode, status, response);
    }
 
-   responsePdu->FunctionCode = requestPdu->FunctionCode;
+   responsePdu->FunctionCode = functionCode;
 
    response->Size = responseFunctionData.Size + sizeof(CommonPdu);
    return true;
