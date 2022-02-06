@@ -34,13 +34,14 @@ ModbusStatus ProcessModbus03FunctionRequest(SDeviceCommonHandle *handle,
       return MODBUS_STATUS_ILLEGAL_DATA_ERROR;
    }
 
+   size_t registersCount = requestData->RegistersToReadCount;
    const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
    ModbusStatus status = commonConstant->ReadRegisters(handle,
                                                        responseData->RegistersBuffer,
                                                        &(ModbusOperationParameters)
                                                        {
                                                           .RegisterAddress = requestData->DataRegisterAddress,
-                                                          .RegistersCount = requestData->RegistersToReadCount,
+                                                          .RegistersCount = registersCount,
                                                           .RequestContext = parameters.RequestContext
                                                        });
 
@@ -50,7 +51,7 @@ ModbusStatus ProcessModbus03FunctionRequest(SDeviceCommonHandle *handle,
       return status;
    }
 
-   responseData->FollowingDataBytes = requestData->RegistersToReadCount * sizeof(ModbusRegister);
+   responseData->FollowingDataBytes = registersCount * sizeof(ModbusRegister);
 
    response->Size = sizeof(Function03ResponseData) + responseData->FollowingDataBytes;
    return MODBUS_STATUS_OK;

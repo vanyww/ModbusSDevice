@@ -60,7 +60,7 @@ typedef struct
    size_t Size;
 } ModbusRequest;
 
-typedef struct __attribute__((scalar_storage_order("big-endian")))
+typedef struct
 {
    void *Bytes;
    size_t Size;
