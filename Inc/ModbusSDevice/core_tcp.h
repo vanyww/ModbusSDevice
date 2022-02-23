@@ -17,15 +17,13 @@ __SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusTcp);
 
 typedef struct
 {
-   __SDEVICE_CONSTANT_DATA(Modbus) Common;
-} __SDEVICE_CONSTANT_DATA(ModbusTcp);
-
-typedef struct { } __SDEVICE_SETTINGS_DATA(ModbusTcp);
+   __SDEVICE_INIT_DATA(Modbus) Common;
+} __SDEVICE_INIT_DATA(ModbusTcp);
 
 typedef struct
 {
    uint8_t MbapHeaderBuffer[__MODBUS_TCP_MBAP_HEADER_SIZE];
-} __SDEVICE_DYNAMIC_DATA(ModbusTcp);
+} __SDEVICE_RUNTIME_DATA(ModbusTcp);
 
 __SDEVICE_HANDLE_DEFINITION(ModbusTcp);
 

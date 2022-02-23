@@ -8,8 +8,7 @@
 
 bool TestTcpWriteOneRequest(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
-   CreateModbusTcpSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle =  CreateModbusTcpSDevice();
 
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x09, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22 };
@@ -50,8 +49,7 @@ bool TestTcpWriteOneRequest(void)
 
 bool TestTcpWriteMultipleRequest(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
-   CreateModbusTcpSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle =  CreateModbusTcpSDevice();
 
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x0B, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44 };

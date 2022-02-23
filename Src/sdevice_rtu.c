@@ -5,25 +5,24 @@
 __SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusRtu, handle)
 {
    SDeviceAssert(handle != NULL);
-   SDeviceAssert(handle->Constant != NULL);
    SDeviceAssert(handle->IsInitialized == false);
-   SDeviceAssert(handle->Constant->Common.ReadRegisters != NULL);
-   SDeviceAssert(handle->Constant->Common.WriteRegisters != NULL);
+   SDeviceAssert(handle->Init.Common.ReadRegisters != NULL);
+   SDeviceAssert(handle->Init.Common.WriteRegisters != NULL);
 
    handle->IsInitialized = true;
 }
 
-__SDEVICE_SET_SETTING_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
+/* Slave address ******************************************************************************************************/
+
+__SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(value != NULL);
+   SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
 
-   __SDEVICE_HANDLE(ModbusRtu) *deviceHandle = handle;
-
-   SDeviceAssert(deviceHandle->IsInitialized == true);
-
-   __typeof__(deviceHandle->Settings.SlaveAddress) address;
-   memcpy(&address, value, sizeof(deviceHandle->Settings.SlaveAddress));
+   __SDEVICE_HANDLE(ModbusRtu) *device = handle;
+   __typeof__(device->Runtime.SlaveAddress) address;
+   memcpy(&address, value, sizeof(device->Runtime.SlaveAddress));
 
    if(__MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
    {
@@ -31,7 +30,21 @@ __SDEVICE_SET_SETTING_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
       return SDEVICE_OPERATION_STATUS_VALIDATION_ERROR;
    }
 
-   deviceHandle->Settings.SlaveAddress = address;
+   device->Runtime.SlaveAddress = address;
 
    return SDEVICE_OPERATION_STATUS_OK;
 }
+
+__SDEVICE_GET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
+{
+   SDeviceAssert(handle != NULL);
+   SDeviceAssert(value != NULL);
+   SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
+
+   __SDEVICE_HANDLE(ModbusRtu) *device = handle;
+   memcpy(value, &device->Runtime.SlaveAddress, sizeof(device->Runtime.SlaveAddress));
+
+   return SDEVICE_OPERATION_STATUS_OK;
+}
+
+/**********************************************************************************************************************/

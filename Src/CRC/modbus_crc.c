@@ -43,7 +43,7 @@ static const ModbusRtuCrcType CrcTable[] =
 ModbusRtuCrcType ComputeModbusRtuCrc(__SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t length)
 {
 #ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
-   return handle->Constant->ComputeCrc16(handle, data, length);
+   return handle->Init.ComputeCrc16(handle, data, length);
 #else
    const uint8_t *bytes = data;
    ModbusRtuCrcType crc = __MODBUS_CRC_16_INITIAL_VALUE;

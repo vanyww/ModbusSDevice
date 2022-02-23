@@ -27,7 +27,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
 
    ModbusRtuRequestType requestType;
    const __RTU_ADU(request->Size - __RTU_EMPTY_ADU_SIZE) *requestAdu = request->Bytes;
-   if(requestAdu->SlaveAddress != handle->Settings.SlaveAddress)
+   if(requestAdu->SlaveAddress != handle->Runtime.SlaveAddress)
    {
       if(requestAdu->SlaveAddress != __MODBUS_RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
          return false;
@@ -66,7 +66,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
    }
 
    __RTU_ADU(responsePdu.Size) *responseAdu = response->Bytes;
-   responseAdu->SlaveAddress = handle->Settings.SlaveAddress;
+   responseAdu->SlaveAddress = handle->Runtime.SlaveAddress;
    responseAdu->Crc16 = ComputeModbusRtuCrc(handle, response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
 
    response->Size = sizeof(*responseAdu);

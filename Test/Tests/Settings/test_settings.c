@@ -5,13 +5,12 @@
 
 bool TestSlaveAddressSettingSet(void)
 {
-   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
-   CreateModbusRtuSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusRtu) handle =  CreateModbusRtuSDevice();
 
    for(size_t i = 0; i <= UINT8_MAX; i++)
    {
       uint8_t address = i;
-      SDeviceOperationStatus status = __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &address);
+      SDeviceOperationStatus status = __SDEVICE_SET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &address);
 
       if(WasAssertFailed() == true)
          return false;
@@ -26,7 +25,7 @@ bool TestSlaveAddressSettingSet(void)
       }
       else
       {
-         if(handle.Settings.SlaveAddress != i)
+         if(handle.Runtime.SlaveAddress != i)
             return false;
       }
 

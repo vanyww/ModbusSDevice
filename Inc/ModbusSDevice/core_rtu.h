@@ -52,29 +52,23 @@ __SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
 
 typedef struct
 {
-   __SDEVICE_CONSTANT_DATA(Modbus) Common;
+   __SDEVICE_INIT_DATA(Modbus) Common;
 #ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
    ModbusRtuCrcType (* ComputeCrc16)(__SDEVICE_HANDLE(ModbusRtu) *, const void *, size_t);
 #endif
-} __SDEVICE_CONSTANT_DATA(ModbusRtu);
+} __SDEVICE_INIT_DATA(ModbusRtu);
 
 typedef struct
 {
    uint8_t SlaveAddress;
-} ModbusRtuRtuSettings;
-
-typedef struct
-{
-   uint8_t SlaveAddress;
-} __SDEVICE_SETTINGS_DATA(ModbusRtu);
-
-typedef struct { } __SDEVICE_DYNAMIC_DATA(ModbusRtu);
+} __SDEVICE_RUNTIME_DATA(ModbusRtu);
 
 __SDEVICE_HANDLE_DEFINITION(ModbusRtu);
 
 __SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusRtu,);
 
-__SDEVICE_SET_SETTING_DECLARATION(ModbusRtu, SlaveAddress,,);
+__SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress,,);
+__SDEVICE_GET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress,,);
 
 /* Satty's interface end */
 
