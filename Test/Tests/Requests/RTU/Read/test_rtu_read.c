@@ -9,9 +9,8 @@
 bool TestRtuReadOneRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
-   CreateModbusRtuSDevice(&handle);
-   __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
+   __SDEVICE_HANDLE(ModbusRtu) handle =  CreateModbusRtuSDevice();
+   __SDEVICE_SET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
    MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0xCCBB };
 
@@ -41,9 +40,8 @@ bool TestRtuReadOneRequest(void)
 bool TestRtuReadMultipleRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
-   CreateModbusRtuSDevice(&handle);
-   __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
+   __SDEVICE_HANDLE(ModbusRtu) handle =  CreateModbusRtuSDevice();
+   __SDEVICE_SET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
    MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0x1122 };
    MockReadRegisters[1] = (ModbusRegister){ .AsValue = 0x3344 };
@@ -75,9 +73,8 @@ bool TestRtuReadMultipleRequest(void)
 bool TestRtuReadTooManyRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
-   CreateModbusRtuSDevice(&handle);
-   __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
+   __SDEVICE_HANDLE(ModbusRtu) handle =  CreateModbusRtuSDevice();
+   __SDEVICE_SET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { 0xAA, 0x83, 0x03, 0x70, 0xD1 };
@@ -105,9 +102,8 @@ bool TestRtuReadTooManyRequest(void)
 bool TestRtuReadWithWrongSlaveAddressRequest(void)
 {
    uint8_t slaveAddress = 0xAA;
-   __SDEVICE_HANDLE(ModbusRtu) handle = { 0 };
-   CreateModbusRtuSDevice(&handle);
-   __SDEVICE_SET_SETTING(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
+   __SDEVICE_HANDLE(ModbusRtu) handle =  CreateModbusRtuSDevice();
+   __SDEVICE_SET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &slaveAddress);
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
    ModbusRequest requestData = { .Bytes = request, .Size = sizeof(request) };

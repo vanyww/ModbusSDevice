@@ -8,8 +8,7 @@
 
 bool TestTcpReadOneRequest(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
-   CreateModbusTcpSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle =  CreateModbusTcpSDevice();
 
    MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0x1122 };
 
@@ -48,8 +47,7 @@ bool TestTcpReadOneRequest(void)
 
 bool TestTcpReadMultipleRequest(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
-   CreateModbusTcpSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle =  CreateModbusTcpSDevice();
 
    MockReadRegisters[0] = (ModbusRegister){ .AsValue = 0x1122 };
    MockReadRegisters[1] = (ModbusRegister){ .AsValue = 0x3344 };
@@ -89,8 +87,7 @@ bool TestTcpReadMultipleRequest(void)
 
 bool TestTcpReadTooManyRequest(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle = { 0 };
-   CreateModbusTcpSDevice(&handle);
+   __SDEVICE_HANDLE(ModbusTcp) handle =  CreateModbusTcpSDevice();
 
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0xFF };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x01, 0x83, 0x03 };
