@@ -70,5 +70,5 @@ typedef struct
 {
    ModbusStatus (* ReadRegisters)(SDeviceCommonHandle *, ModbusRegister *, const ModbusOperationParameters *);
    ModbusStatus (* WriteRegisters)(SDeviceCommonHandle *, const ModbusRegister *, const ModbusOperationParameters *);
-} __SDEVICE_CONSTANT_DATA(Modbus);
+} __SDEVICE_INIT_DATA(Modbus);
 

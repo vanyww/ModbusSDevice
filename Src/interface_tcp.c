@@ -33,7 +33,7 @@ bool ModbusTcpTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRe
    if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
       return false;
 
-   memcpy(handle->Dynamic.MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
+   memcpy(handle->Runtime.MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
 
    *lengthToReceive = requestAdu->PacketSize;
    return true;
@@ -46,7 +46,7 @@ bool ModbusTcpTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusReque
    SDeviceAssert(response != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   TcpAduData *mbapHeader = (TcpAduData *)handle->Dynamic.MbapHeaderBuffer;
+   TcpAduData *mbapHeader = (TcpAduData *)handle->Runtime.MbapHeaderBuffer;
    if(request->Size > __MODBUS_TCP_MAX_MESSAGE_SIZE - __MODBUS_TCP_MBAP_HEADER_SIZE ||
       request->Size + __SIZEOF_MEMBER(TcpAduData, SlaveAddress) != mbapHeader->PacketSize)
    {

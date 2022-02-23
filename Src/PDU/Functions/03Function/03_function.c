@@ -35,15 +35,15 @@ ModbusStatus ProcessModbus03FunctionRequest(SDeviceCommonHandle *handle,
    }
 
    size_t registersCount = requestData->RegistersToReadCount;
-   const __SDEVICE_CONSTANT_DATA(Modbus) *commonConstant = handle->Constant;
-   ModbusStatus status = commonConstant->ReadRegisters(handle,
-                                                       responseData->RegistersBuffer,
-                                                       &(ModbusOperationParameters)
-                                                       {
-                                                          .RegisterAddress = requestData->DataRegisterAddress,
-                                                          .RegistersCount = registersCount,
-                                                          .RequestContext = parameters.RequestContext
-                                                       });
+   const __SDEVICE_INIT_DATA(Modbus) *initData = (__SDEVICE_INIT_DATA(Modbus) *)handle->Data;
+   ModbusStatus status = initData->ReadRegisters(handle,
+                                                 responseData->RegistersBuffer,
+                                                 &(ModbusOperationParameters)
+                                                 {
+                                                    .RegisterAddress = requestData->DataRegisterAddress,
+                                                    .RegistersCount = registersCount,
+                                                    .RequestContext = parameters.RequestContext
+                                                 });
 
    if(status != MODBUS_STATUS_OK)
    {
