@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "core_common.h"
 
 #define __MODBUS_TCP_MBAP_HEADER_SIZE 7U
 #define __MODBUS_TCP_MAX_MESSAGE_SIZE 260U /* 253 (max PDU) + 7 (common ADU members) */
