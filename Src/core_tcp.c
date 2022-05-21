@@ -15,6 +15,20 @@ typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
    uint8_t PduBytes[];
 } TcpAduData;
 
+/**********************************************************************************************************************/
+
+__SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusTcp, handle)
+{
+   SDeviceAssert(handle != NULL);
+   SDeviceAssert(handle->IsInitialized == false);
+   SDeviceAssert(handle->Init.Common.ReadRegisters != NULL);
+   SDeviceAssert(handle->Init.Common.WriteRegisters != NULL);
+
+   handle->IsInitialized = true;
+}
+
+/**********************************************************************************************************************/
+
 bool ModbusTcpTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRequest *request, size_t *lengthToReceive)
 {
    SDeviceAssert(handle != NULL);

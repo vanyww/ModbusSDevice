@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ModbusSDevice/common.h"
+#include "ModbusSDevice/core_common.h"
 
 #define __MOCK_REGISTERS_COUNT 5U
 
