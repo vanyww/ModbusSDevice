@@ -1,9 +1,9 @@
-#include "../Inc/ModbusSDevice/core_rtu.h"
-
+#include "private_rtu.h"
 #include "CRC/modbus_crc.h"
 #include "PDU/pdu.h"
 
 #include <memory.h>
+#include <stdlib.h>
 
 #define __RTU_EMPTY_ADU_SIZE (sizeof(__RTU_ADU(0)))
 #define __RTU_ADU(pdu_size)                                                                                            \
@@ -16,14 +16,31 @@ struct __attribute__((packed))                                                  
 
 /**********************************************************************************************************************/
 
-__SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusRtu, handle)
+__SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, arguments, instanceIndex, context)
 {
-   SDeviceAssert(handle != NULL);
-   SDeviceAssert(handle->IsInitialized == false);
-   SDeviceAssert(handle->Init.Common.ReadRegisters != NULL);
-   SDeviceAssert(handle->Init.Common.WriteRegisters != NULL);
+   SDeviceAssert(arguments != NULL);
+   SDeviceAssert(arguments->Common.ReadRegisters != NULL);
+   SDeviceAssert(arguments->Common.WriteRegisters != NULL);
+#ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
+   SDeviceAssert(arguments->ComputeCrc16 != NULL);
+#endif
 
-   handle->IsInitialized = true;
+   __SDEVICE_HANDLE(ModbusRtu) handle =
+   {
+      .Init = *arguments,
+      .Runtime = __SDEVICE_MALLOC(sizeof(__SDEVICE_RUNTIME_DATA(ModbusRtu))),
+      .Context = context,
+      .InstanceIndex = instanceIndex,
+      .IsInitialized = true
+   };
+
+   return handle;
+}
+
+__SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handle)
+{
+   __SDEVICE_FREE(handle->Runtime);
+   handle->Runtime = NULL;
 }
 
 /* Slave address ******************************************************************************************************/
@@ -35,8 +52,8 @@ __SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
    SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
 
    __SDEVICE_HANDLE(ModbusRtu) *device = handle;
-   __typeof__(device->Runtime.SlaveAddress) address;
-   memcpy(&address, value, sizeof(device->Runtime.SlaveAddress));
+   __typeof__(device->Runtime->SlaveAddress) address;
+   memcpy(&address, value, sizeof(device->Runtime->SlaveAddress));
 
    if(__MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
    {
@@ -44,7 +61,7 @@ __SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
       return SDEVICE_OPERATION_STATUS_VALIDATION_ERROR;
    }
 
-   device->Runtime.SlaveAddress = address;
+   device->Runtime->SlaveAddress = address;
 
    return SDEVICE_OPERATION_STATUS_OK;
 }
@@ -56,7 +73,7 @@ __SDEVICE_GET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
    SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
 
    __SDEVICE_HANDLE(ModbusRtu) *device = handle;
-   memcpy(value, &device->Runtime.SlaveAddress, sizeof(device->Runtime.SlaveAddress));
+   memcpy(value, &device->Runtime->SlaveAddress, sizeof(device->Runtime->SlaveAddress));
 
    return SDEVICE_OPERATION_STATUS_OK;
 }
@@ -80,7 +97,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
 
    ModbusRtuRequestType requestType;
    const __RTU_ADU(request->Size - __RTU_EMPTY_ADU_SIZE) *requestAdu = request->Bytes;
-   if(requestAdu->SlaveAddress != handle->Runtime.SlaveAddress)
+   if(requestAdu->SlaveAddress != handle->Runtime->SlaveAddress)
    {
       if(requestAdu->SlaveAddress != __MODBUS_RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
          return false;
@@ -102,7 +119,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
    ModbusResponse responsePdu = { ((__RTU_ADU(0) *)response->Bytes)->PduBytes };
    ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusRtuRequestData)
+      .RequestContext = &(ModbusRtuRequestContext)
       {
          .Common.ModbusType = MODBUS_MODBUS_TYPE_RTU,
          .RequestType = requestType
@@ -119,7 +136,7 @@ bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusReque
    }
 
    __RTU_ADU(responsePdu.Size) *responseAdu = response->Bytes;
-   responseAdu->SlaveAddress = handle->Runtime.SlaveAddress;
+   responseAdu->SlaveAddress = handle->Runtime->SlaveAddress;
    responseAdu->Crc16 = ComputeModbusRtuCrc(handle, response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
 
    response->Size = sizeof(*responseAdu);

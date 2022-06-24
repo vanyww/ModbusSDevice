@@ -1,8 +1,8 @@
-#include "../Inc/ModbusSDevice/core_tcp.h"
-
+#include "private_tcp.h"
 #include "PDU/pdu.h"
 
 #include <memory.h>
+#include <stdlib.h>
 
 #define __MODBUS_TCP_PROTOCOL_ID 0x0000
 
@@ -17,14 +17,28 @@ typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
 
 /**********************************************************************************************************************/
 
-__SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusTcp, handle)
+__SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, arguments, instanceIndex, context)
 {
-   SDeviceAssert(handle != NULL);
-   SDeviceAssert(handle->IsInitialized == false);
-   SDeviceAssert(handle->Init.Common.ReadRegisters != NULL);
-   SDeviceAssert(handle->Init.Common.WriteRegisters != NULL);
+   SDeviceAssert(arguments != NULL);
+   SDeviceAssert(arguments->Common.ReadRegisters != NULL);
+   SDeviceAssert(arguments->Common.WriteRegisters != NULL);
 
-   handle->IsInitialized = true;
+   __SDEVICE_HANDLE(ModbusTcp) handle =
+   {
+      .Init = *arguments,
+      .Runtime = __SDEVICE_MALLOC(sizeof(__SDEVICE_RUNTIME_DATA(ModbusTcp))),
+      .Context = context,
+      .InstanceIndex = instanceIndex,
+      .IsInitialized = true
+   };
+
+   return handle;
+}
+
+__SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handle)
+{
+   __SDEVICE_FREE(handle->Runtime);
+   handle->Runtime = NULL;
 }
 
 /**********************************************************************************************************************/
@@ -47,7 +61,7 @@ bool ModbusTcpTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRe
    if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
       return false;
 
-   memcpy(handle->Runtime.MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
+   memcpy(handle->Runtime->MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
 
    *lengthToReceive = requestAdu->PacketSize;
    return true;
@@ -60,7 +74,7 @@ bool ModbusTcpTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusReque
    SDeviceAssert(response != NULL);
    SDeviceAssert(handle->IsInitialized == true);
 
-   TcpAduData *mbapHeader = (TcpAduData *)handle->Runtime.MbapHeaderBuffer;
+   TcpAduData *mbapHeader = (TcpAduData *)handle->Runtime->MbapHeaderBuffer;
    if(request->Size > __MODBUS_TCP_MAX_MESSAGE_SIZE - __MODBUS_TCP_MBAP_HEADER_SIZE ||
       request->Size + __SIZEOF_MEMBER(TcpAduData, SlaveAddress) != mbapHeader->PacketSize)
    {
@@ -72,7 +86,7 @@ bool ModbusTcpTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusReque
    ModbusResponse responsePdu = { responseAdu->PduBytes };
    ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusTcpRequestData)
+      .RequestContext = &(ModbusTcpRequestContext)
       {
          .Common.ModbusType = MODBUS_MODBUS_TYPE_TCP,
          .SlaveAddress = mbapHeader->SlaveAddress

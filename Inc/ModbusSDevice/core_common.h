@@ -39,7 +39,7 @@ typedef enum
 typedef struct
 {
    ModbusModbusType ModbusType;
-} ModbusRequestData;
+} ModbusRequestContext;
 
 typedef union __attribute__((packed, scalar_storage_order("big-endian")))
 {
@@ -66,9 +66,14 @@ typedef struct
    size_t Size;
 } ModbusResponse;
 
+/* Satty's interface start */
+
 typedef struct
 {
    ModbusStatus (* ReadRegisters)(SDeviceCommonHandle *, ModbusRegister *, const ModbusOperationParameters *);
    ModbusStatus (* WriteRegisters)(SDeviceCommonHandle *, const ModbusRegister *, const ModbusOperationParameters *);
-} __SDEVICE_INIT_DATA(Modbus);
+} __SDEVICE_INIT_ARGUMENTS(Modbus);
 
+typedef __SDEVICE_INIT_ARGUMENTS(Modbus) __SDEVICE_INIT_DATA(Modbus);
+
+/* Satty's interface end */
