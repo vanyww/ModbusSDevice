@@ -37,7 +37,7 @@ ModbusStatus ProcessModbus16FunctionRequest(SDeviceCommonHandle *handle,
 
    uint16_t address = requestData->DataRegisterAddress;
    size_t registersCount = requestData->RegistersToWriteCount;
-   const __SDEVICE_INIT_DATA(Modbus) *initData = (__SDEVICE_INIT_DATA(Modbus) *)handle->Data;
+   const __SDEVICE_INIT_DATA(Modbus) *initData = (__SDEVICE_INIT_DATA(Modbus) *)handle->Init;
    ModbusStatus status = initData->WriteRegisters(handle,
                                                   requestData->RegistersBuffer,
                                                   &(ModbusOperationParameters)

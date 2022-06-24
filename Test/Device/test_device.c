@@ -8,38 +8,28 @@
 
 __SDEVICE_HANDLE(ModbusRtu) CreateModbusRtuSDevice(void)
 {
-   __SDEVICE_HANDLE(ModbusRtu) handle =
+   __SDEVICE_INIT_ARGUMENTS(ModbusRtu) arguments =
    {
-      .Init = (__SDEVICE_INIT_DATA(ModbusRtu))
-      {
-         .Common.ReadRegisters = ReadRegistersMock,
-         .Common.WriteRegisters = WriteRegistersMock,
-      }
+      .Common.ReadRegisters = ReadRegistersMock,
+      .Common.WriteRegisters = WriteRegistersMock,
    };
 
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
 
-   __SDEVICE_INITIALIZE_HANDLE(ModbusRtu)(&handle);
-
-   return handle;
+   return __SDEVICE_CREATE_HANDLE(ModbusRtu)(&arguments, 0, NULL);
 }
 
 __SDEVICE_HANDLE(ModbusTcp) CreateModbusTcpSDevice(void)
 {
-   __SDEVICE_HANDLE(ModbusTcp) handle =
+   __SDEVICE_INIT_ARGUMENTS(ModbusTcp) arguments =
    {
-      .Init = (__SDEVICE_INIT_DATA(ModbusTcp))
-      {
-         .Common.ReadRegisters = ReadRegistersMock,
-         .Common.WriteRegisters = WriteRegistersMock,
-      }
+      .Common.ReadRegisters = ReadRegistersMock,
+      .Common.WriteRegisters = WriteRegistersMock,
    };
 
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
 
-   __SDEVICE_INITIALIZE_HANDLE(ModbusTcp)(&handle);
-
-   return handle;
+   return __SDEVICE_CREATE_HANDLE(ModbusTcp)(&arguments, 0, NULL);
 }

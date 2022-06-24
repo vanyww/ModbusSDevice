@@ -14,7 +14,7 @@ bool TestTcpReadOneRequest(void)
 
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0x01 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x05, 0x01, 0x03, 0x02, 0x11, 0x22 };
-   ModbusRequest mbapData = { .Bytes = request, .Size = __MODBUS_TCP_MBAP_HEADER_SIZE };
+   ModbusRequest mbapData = { .Bytes = request, .Size = 7 };
    ModbusRequest requestData =
    {
       .Bytes = request + __MODBUS_TCP_MBAP_HEADER_SIZE,

@@ -35,7 +35,7 @@ ModbusStatus ProcessModbus03FunctionRequest(SDeviceCommonHandle *handle,
    }
 
    size_t registersCount = requestData->RegistersToReadCount;
-   const __SDEVICE_INIT_DATA(Modbus) *initData = (__SDEVICE_INIT_DATA(Modbus) *)handle->Data;
+   const __SDEVICE_INIT_DATA(Modbus) *initData = (__SDEVICE_INIT_DATA(Modbus) *)handle->Init;
    ModbusStatus status = initData->ReadRegisters(handle,
                                                  responseData->RegistersBuffer,
                                                  &(ModbusOperationParameters)

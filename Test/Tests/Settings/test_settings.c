@@ -25,7 +25,10 @@ bool TestSlaveAddressSettingSet(void)
       }
       else
       {
-         if(handle.Runtime.SlaveAddress != i)
+         uint8_t readAddress;
+         __SDEVICE_GET_PARAMETER(ModbusRtu, SlaveAddress)(&handle, &readAddress);
+
+         if(readAddress != i)
             return false;
       }
 

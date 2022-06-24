@@ -2,8 +2,6 @@
 
 #include "core_common.h"
 
-#include <math.h>
-
 #define __MODBUS_RTU_INTERCHAR_DELAY_CHARS 1.5f
 #define __MODBUS_RTU_INTERFRAME_DELAY_CHARS 3.5f
 
@@ -42,13 +40,14 @@ typedef enum
 
 typedef struct
 {
-   ModbusRequestData Common;
+   ModbusRequestContext Common;
    ModbusRtuRequestType RequestType;
-} ModbusRtuRequestData;
+} ModbusRtuRequestContext;
 
 /* Satty's interface start */
 
 __SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
+__SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 typedef struct
 {
@@ -56,16 +55,14 @@ typedef struct
 #ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
    ModbusRtuCrcType (* ComputeCrc16)(__SDEVICE_HANDLE(ModbusRtu) *, const void *, size_t);
 #endif
-} __SDEVICE_INIT_DATA(ModbusRtu);
+} __SDEVICE_INIT_ARGUMENTS(ModbusRtu);
 
-typedef struct
-{
-   uint8_t SlaveAddress;
-} __SDEVICE_RUNTIME_DATA(ModbusRtu);
+typedef __SDEVICE_INIT_ARGUMENTS(ModbusRtu) __SDEVICE_INIT_DATA(ModbusRtu);
 
 __SDEVICE_HANDLE_DEFINITION(ModbusRtu);
 
-__SDEVICE_INITIALIZE_HANDLE_DECLARATION(ModbusRtu,);
+__SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu,,,);
+__SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu,);
 
 __SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress,,);
 __SDEVICE_GET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress,,);
