@@ -19,6 +19,7 @@ typedef struct
 typedef enum
 {
    FUNCTION_CODE_READ_HOLDING_REGISTERS    = 0x03,
+   FUNCTION_CODE_READ_INPUT_REGISTERS      = 0x04,
    FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS = 0x10
 } FunctionCode;
 
@@ -51,6 +52,8 @@ bool TryProcessModbusPdu(SDeviceCommonHandle *handle,
    uint8_t functionCode = requestPdu->FunctionCode;
    switch(functionCode)
    {
+      case FUNCTION_CODE_READ_INPUT_REGISTERS:
+         /* fall-through */
       case FUNCTION_CODE_READ_HOLDING_REGISTERS:
          function = ProcessModbus03FunctionRequest;
          break;
