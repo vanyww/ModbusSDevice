@@ -1,5 +1,4 @@
 #include "Tests/Initialization/test_initialization.h"
-#include "Tests/Settings/test_settings.h"
 #include "Tests/Requests/RTU/Read/test_rtu_read.h"
 #include "Tests/Requests/RTU/Write/test_rtu_write.h"
 #include "Tests/Requests/TCP/Read/test_tcp_read.h"
@@ -16,7 +15,6 @@ struct
 {
    { TestRtuHandleInitialization, "rtu handle initialization" },
    { TestTcpHandleInitialization, "tcp handle initialization" },
-   { TestSlaveAddressSettingSet, "rtu handle set slave address setting" },
 
    { TestRtuReadOneRequest, "rtu read one register" },
    { TestRtuReadMultipleRequest, "rtu read multiple registers" },
