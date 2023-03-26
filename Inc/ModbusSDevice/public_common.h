@@ -5,6 +5,17 @@
 #if (SDEVICE_CORE_VERSION_MAJOR != 7) || (SDEVICE_CORE_VERSION_MINOR < 0)
 #error Incorrect SDeviceCore version.
 #endif
+
+#define MODBUS_SDEVICE_VERSION_MAJOR 1
+#define MODBUS_SDEVICE_VERSION_MINOR 0
+#define MODBUS_SDEVICE_VERSION_PATCH 0
+#define MODBUS_SDEVICE_CORE_VERSION ((SDeviceVersion)                                                                  \
+{                                                                                                                      \
+   .Major = MODBUS_SDEVICE_VERSION_MAJOR,                                                                              \
+   .Minor = MODBUS_SDEVICE_VERSION_MINOR,                                                                              \
+   .Patch = MODBUS_SDEVICE_VERSION_PATCH                                                                               \
+})
+
 typedef enum
 {
    MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK                                            = 0x00,
