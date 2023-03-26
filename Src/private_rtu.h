@@ -1,8 +1,12 @@
 #pragma once
 
-#include "../Inc/ModbusSDevice/core_rtu.h"
+#include "ModbusSDevice/public_rtu.h"
 
-struct __SDEVICE_RUNTIME_DATA(ModbusRtu)
+SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
+
+SDEVICE_RUNTIME_DATA_DECLARATION(ModbusRtu)
 {
-   uint8_t SlaveAddress;
+   SDEVICE_PROPERTY_TYPE(ModbusRtu, SlaveAddress) SlaveAddress;
 };
+
+SDEVICE_HANDLE_DECLARATION(ModbusRtu);

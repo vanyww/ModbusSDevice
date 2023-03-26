@@ -1,8 +1,12 @@
 #pragma once
 
-#include "../Inc/ModbusSDevice/core_tcp.h"
+#include "ModbusSDevice/public_tcp.h"
 
-struct __SDEVICE_RUNTIME_DATA(ModbusTcp)
+SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
+
+SDEVICE_RUNTIME_DATA_DECLARATION(ModbusTcp)
 {
-   uint8_t MbapHeaderBuffer[__MODBUS_TCP_MBAP_HEADER_SIZE];
+   uint8_t MbapHeaderBuffer[MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE];
 };
+
+SDEVICE_HANDLE_DECLARATION(ModbusTcp);
