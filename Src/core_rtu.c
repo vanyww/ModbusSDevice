@@ -1,144 +1,156 @@
-#include "private_rtu.h"
-#include "CRC/modbus_crc.h"
 #include "PDU/pdu.h"
+#include "Crc/crc.h"
+
+#include "SDeviceCore/heap.h"
 
 #include <memory.h>
-#include <stdlib.h>
 
-#define __RTU_EMPTY_ADU_SIZE (sizeof(__RTU_ADU(0)))
-#define __RTU_ADU(pdu_size)                                                                                            \
+#define MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                   \
+{                                                                                                                      \
+   __auto_type _address = (address);                                                                                   \
+   _address != MODBUS_RTU_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                   \
+   _address <= MODBUS_RTU_SDEVICE_MAX_VALID_SLAVE_ADDRESS;                                                             \
+})
+
+#define MODBUS_RTU_EMPTY_ADU_SIZE (sizeof(MODBUS_RTU_ADU(0)))
+#define MODBUS_RTU_ADU(pdu_size)                                                                                       \
 struct __attribute__((packed))                                                                                         \
 {                                                                                                                      \
    uint8_t SlaveAddress;                                                                                               \
    uint8_t PduBytes[(pdu_size)];                                                                                       \
-   ModbusRtuCrcType Crc16;                                                                                             \
+   uint16_t Crc16;                                                                                                     \
 }
 
-/**********************************************************************************************************************/
-
-__SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, arguments, instanceIndex, context)
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, parent, identifier, context)
 {
-   SDeviceAssert(arguments != NULL);
-   SDeviceAssert(arguments->Common.ReadRegisters != NULL);
-   SDeviceAssert(arguments->Common.WriteRegisters != NULL);
-#ifdef __MODBUS_SDEVICE_USE_EXTERN_CRC
-   SDeviceAssert(arguments->ComputeCrc16 != NULL);
-#endif
+   SDeviceAssert(init != NULL);
 
-   __SDEVICE_HANDLE(ModbusRtu) handle =
+   const SDEVICE_INIT_DATA(ModbusRtu) *_init = init;
+
+   SDeviceAssert(_init->RegistersCallbacks.ReadRegisters != NULL);
+   SDeviceAssert(_init->RegistersCallbacks.WriteRegisters != NULL);
+
+   SDEVICE_HANDLE(ModbusRtu) *handle = SDeviceMalloc(sizeof(SDEVICE_HANDLE(ModbusRtu)));
+
+   SDeviceAssert(handle != NULL);
+
+   handle->Init = *_init;
+   handle->Header = (SDeviceHandleHeader)
    {
-      .Init = *arguments,
-      .Runtime = __SDEVICE_MALLOC(sizeof(__SDEVICE_RUNTIME_DATA(ModbusRtu))),
       .Context = context,
-      .InstanceIndex = instanceIndex,
-      .IsInitialized = true
+      .ParentHandle = parent,
+      .Identifier = identifier,
+      .LatestStatus = MODBUS_RTU_SDEVICE_STATUS_OK
    };
+
+   InitializeCrc16();
 
    return handle;
 }
 
-__SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handle)
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer)
 {
-   __SDEVICE_FREE(handle->Runtime);
-   handle->Runtime = NULL;
+   SDeviceAssert(handlePointer != NULL);
+
+   SDEVICE_HANDLE(ModbusRtu) **_handlePointer = handlePointer;
+   SDEVICE_HANDLE(ModbusRtu) *handle = *_handlePointer;
+
+   SDeviceAssert(handle != NULL);
+
+   SDeviceFree(handle);
+   *_handlePointer = NULL;
 }
 
-/* Slave address ******************************************************************************************************/
-
-__SDEVICE_SET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
+SDEVICE_GET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(value != NULL);
-   SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
 
-   __SDEVICE_HANDLE(ModbusRtu) *device = handle;
-   __typeof__(device->Runtime->SlaveAddress) address;
-   memcpy(&address, value, sizeof(device->Runtime->SlaveAddress));
+   SDEVICE_HANDLE(ModbusRtu) *_handle = handle;
+   memcpy(value, &_handle->Runtime.SlaveAddress, sizeof(_handle->Runtime.SlaveAddress));
 
-   if(__MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
+   return SDEVICE_PROPERTY_OPERATION_STATUS_OK;
+}
+
+SDEVICE_SET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
+{
+   SDeviceAssert(handle != NULL);
+   SDeviceAssert(value != NULL);
+
+   SDEVICE_HANDLE(ModbusRtu) *_handle = handle;
+   typeof(_handle->Runtime.SlaveAddress) address;
+   memcpy(&address, value, sizeof(_handle->Runtime.SlaveAddress));
+
+   if(MODBUS_RTU_IS_VALID_SLAVE_ADDRESS(address) != true)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_SLAVE_ADDRESS_INVALID_SET);
-      return SDEVICE_OPERATION_STATUS_VALIDATION_ERROR;
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_SLAVE_ADDRESS_INVALID_SET);
+      return SDEVICE_PROPERTY_OPERATION_STATUS_VALIDATION_ERROR;
    }
 
-   device->Runtime->SlaveAddress = address;
+   _handle->Runtime.SlaveAddress = address;
 
-   return SDEVICE_OPERATION_STATUS_OK;
+   return SDEVICE_PROPERTY_OPERATION_STATUS_OK;
 }
 
-__SDEVICE_GET_PARAMETER_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
-{
-   SDeviceAssert(handle != NULL);
-   SDeviceAssert(value != NULL);
-   SDeviceAssert(((SDeviceCommonHandle *)handle)->IsInitialized == true);
-
-   __SDEVICE_HANDLE(ModbusRtu) *device = handle;
-   memcpy(value, &device->Runtime->SlaveAddress, sizeof(device->Runtime->SlaveAddress));
-
-   return SDEVICE_OPERATION_STATUS_OK;
-}
-
-/**********************************************************************************************************************/
-
-/**********************************************************************************************************************/
-
-bool ModbusRtuTryProcessRequest(__SDEVICE_HANDLE(ModbusRtu) *handle, ModbusRequest *request, ModbusResponse *response)
+bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
+                                       const ModbusSDeviceRequest *request,
+                                       ModbusSDeviceResponse *response)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(request != NULL);
    SDeviceAssert(response != NULL);
-   SDeviceAssert(handle->IsInitialized == true);
+   SDeviceAssert(request->Data != NULL);
+   SDeviceAssert(response->Data != NULL);
 
-   if(request->Size < __RTU_EMPTY_ADU_SIZE || request->Size > __MODBUS_RTU_MAX_MESSAGE_SIZE)
+   if(request->Size < MODBUS_RTU_EMPTY_ADU_SIZE || request->Size > MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
    }
 
-   ModbusRtuRequestType requestType;
-   const __RTU_ADU(request->Size - __RTU_EMPTY_ADU_SIZE) *requestAdu = request->Bytes;
-   if(requestAdu->SlaveAddress != handle->Runtime->SlaveAddress)
+   ModbusRtuSDeviceRequestContext requestContext = { .Common.ProtocolType = MODBUS_SDEVICE_PROTOCOL_TYPE_RTU };
+   const MODBUS_RTU_ADU(request->Size - MODBUS_RTU_EMPTY_ADU_SIZE) *requestAdu = request->Data;
+
+   if(requestAdu->SlaveAddress != handle->Runtime.SlaveAddress)
    {
-      if(requestAdu->SlaveAddress != __MODBUS_RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
+      if(requestAdu->SlaveAddress != MODBUS_RTU_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS)
          return false;
 
-      requestType = MODBUS_RTU_REQUEST_TYPE_BROADCAST;
+      requestContext.RequestType = MODBUS_RTU_SDEVICE_REQUEST_TYPE_BROADCAST;
    }
    else
    {
-      requestType = MODBUS_RTU_REQUEST_TYPE_NORMAL;
+      requestContext.RequestType = MODBUS_RTU_SDEVICE_REQUEST_TYPE_NORMAL;
    }
 
-   if(requestAdu->Crc16 != ComputeModbusRtuCrc(handle, request->Bytes, request->Size - sizeof(ModbusRtuCrcType)))
+   if(requestAdu->Crc16 != ComputeCrc16(handle, requestAdu, sizeof(*requestAdu) - sizeof(requestAdu->Crc16)))
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_REQUEST_CRC_MISMATCH);
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
    }
 
-   ModbusRequest requestPdu = { requestAdu->PduBytes, sizeof(requestAdu->PduBytes) };
-   ModbusResponse responsePdu = { ((__RTU_ADU(0) *)response->Bytes)->PduBytes };
-   ModbusProcessingParameters processingParameters =
+   ModbusSDeviceRequest requestPdu = { requestAdu->PduBytes, sizeof(requestAdu->PduBytes) };
+   ModbusSDeviceResponse responsePdu = { ((MODBUS_RTU_ADU(0) *)response->Data)->PduBytes };
+   const ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusRtuRequestContext)
-      {
-         .Common.ModbusType = MODBUS_MODBUS_TYPE_RTU,
-         .RequestType = requestType
-      }
+      .RegistersCallbacks = &handle->Init.RegistersCallbacks,
+      .RequestContext = &requestContext
    };
 
-   if(TryProcessModbusPdu((SDeviceCommonHandle *)handle, processingParameters, &requestPdu, &responsePdu) != true)
+   if(TryProcessRequestPdu(handle, &processingParameters, &requestPdu, &responsePdu) != true)
       return false;
 
-   if(requestType == MODBUS_RTU_REQUEST_TYPE_BROADCAST)
+   if(requestContext.RequestType == MODBUS_RTU_SDEVICE_REQUEST_TYPE_BROADCAST)
    {
       response->Size = 0;
       return true;
    }
 
-   __RTU_ADU(responsePdu.Size) *responseAdu = response->Bytes;
-   responseAdu->SlaveAddress = handle->Runtime->SlaveAddress;
-   responseAdu->Crc16 = ComputeModbusRtuCrc(handle, response->Bytes, sizeof(*responseAdu) - sizeof(ModbusRtuCrcType));
+   MODBUS_RTU_ADU(responsePdu.Size) *responseAdu = response->Data;
+   responseAdu->SlaveAddress = handle->Runtime.SlaveAddress;
+   responseAdu->Crc16 = ComputeCrc16(handle, responseAdu, sizeof(*responseAdu) - sizeof(responseAdu->Crc16));
 
    response->Size = sizeof(*responseAdu);
+
    return true;
 }

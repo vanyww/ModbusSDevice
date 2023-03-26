@@ -2,33 +2,31 @@
 
 #include <memory.h>
 
-ModbusRegister MockReadRegisters[__MOCK_REGISTERS_COUNT];
-ModbusRegister MockWriteRegisters[__MOCK_REGISTERS_COUNT];
+ModbusSDeviceRegister MockReadRegisters[MOCK_REGISTERS_COUNT];
+ModbusSDeviceRegister MockWriteRegisters[MOCK_REGISTERS_COUNT];
 
-ModbusStatus ReadRegistersMock(SDeviceCommonHandle *handle,
-                               ModbusRegister *registers,
-                               const ModbusOperationParameters *parameters)
+ModbusSDeviceProtocolException ReadRegistersMock(ModbusSDeviceCommonHandle handle,
+                                                 const ModbusSDeviceRegistersReadParameters *parameters)
 {
-   if(parameters->RegisterAddress + parameters->RegistersCount > __MOCK_REGISTERS_COUNT)
-      return MODBUS_STATUS_ILLEGAL_ADDRESS_ERROR;
+   if(parameters->RegistersAddress + parameters->RegistersCount > MOCK_REGISTERS_COUNT)
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_ADDRESS_ERROR;
 
-   memcpy(registers,
-          &MockReadRegisters[parameters->RegisterAddress],
-          parameters->RegistersCount * sizeof(ModbusRegister));
+   memcpy(parameters->Data.AsPlain,
+          &MockReadRegisters[parameters->RegistersAddress],
+          parameters->RegistersCount * sizeof(ModbusSDeviceRegister));
 
-   return MODBUS_STATUS_OK;
+   return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }
 
-ModbusStatus WriteRegistersMock(SDeviceCommonHandle *handle,
-                                const ModbusRegister *registers,
-                                const ModbusOperationParameters *parameters)
+ModbusSDeviceProtocolException WriteRegistersMock(ModbusSDeviceCommonHandle handle,
+                                                  const ModbusSDeviceRegistersWriteParameters *parameters)
 {
-   if(parameters->RegisterAddress + parameters->RegistersCount > __MOCK_REGISTERS_COUNT)
-      return MODBUS_STATUS_ILLEGAL_ADDRESS_ERROR;
+   if(parameters->RegistersAddress + parameters->RegistersCount > MOCK_REGISTERS_COUNT)
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_ADDRESS_ERROR;
 
-   memcpy(&MockWriteRegisters[parameters->RegisterAddress],
-          registers,
-          parameters->RegistersCount * sizeof(ModbusRegister));
+   memcpy(&MockWriteRegisters[parameters->RegistersAddress],
+          parameters->Data.AsPlain,
+          parameters->RegistersCount * sizeof(ModbusSDeviceRegister));
 
-   return MODBUS_STATUS_OK;
+   return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }

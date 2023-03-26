@@ -1,106 +1,127 @@
-#include "private_tcp.h"
 #include "PDU/pdu.h"
 
+#include "SDeviceCore/heap.h"
+#include "SDeviceCore/errors.h"
+#include "SDeviceCore/common.h"
+
 #include <memory.h>
-#include <stdlib.h>
 
-#define __MODBUS_TCP_PROTOCOL_ID 0x0000
+#define MODBUS_TCP_PROTOCOL_ID 0x0000
 
-typedef struct __attribute__((scalar_storage_order("big-endian"), packed))
+typedef struct __attribute__((packed, scalar_storage_order("big-endian")))
 {
    uint16_t TransactionId;
    uint16_t ProtocolId;
    uint16_t PacketSize;
    uint8_t SlaveAddress;
    uint8_t PduBytes[];
-} TcpAduData;
+} ModbusTcpAduData;
 
-/**********************************************************************************************************************/
-
-__SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, arguments, instanceIndex, context)
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, parent, identifier, context)
 {
-   SDeviceAssert(arguments != NULL);
-   SDeviceAssert(arguments->Common.ReadRegisters != NULL);
-   SDeviceAssert(arguments->Common.WriteRegisters != NULL);
+   SDeviceAssert(init != NULL);
 
-   __SDEVICE_HANDLE(ModbusTcp) handle =
+   const SDEVICE_INIT_DATA(ModbusTcp) *_init = init;
+
+   SDeviceAssert(_init->RegistersCallbacks.ReadRegisters != NULL);
+   SDeviceAssert(_init->RegistersCallbacks.WriteRegisters != NULL);
+
+   SDEVICE_HANDLE(ModbusTcp) *handle = SDeviceMalloc(sizeof(SDEVICE_HANDLE(ModbusTcp)));
+
+   SDeviceAssert(handle != NULL);
+
+   handle->Init = *_init;
+   handle->Header = (SDeviceHandleHeader)
    {
-      .Init = *arguments,
-      .Runtime = __SDEVICE_MALLOC(sizeof(__SDEVICE_RUNTIME_DATA(ModbusTcp))),
       .Context = context,
-      .InstanceIndex = instanceIndex,
-      .IsInitialized = true
+      .ParentHandle = parent,
+      .Identifier = identifier,
+      .LatestStatus = MODBUS_TCP_SDEVICE_STATUS_OK
    };
 
    return handle;
 }
 
-__SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handle)
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
 {
-   __SDEVICE_FREE(handle->Runtime);
-   handle->Runtime = NULL;
+   SDeviceAssert(handlePointer != NULL);
+
+   SDEVICE_HANDLE(ModbusTcp) **_handlePointer = handlePointer;
+   SDEVICE_HANDLE(ModbusTcp) *handle = *_handlePointer;
+
+   SDeviceAssert(handle != NULL);
+
+   SDeviceFree(handle);
+   *_handlePointer = NULL;
 }
 
-/**********************************************************************************************************************/
-
-bool ModbusTcpTryProcessMbapHeader(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRequest *request, size_t *lengthToReceive)
+bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,
+                                          const ModbusSDeviceRequest *request,
+                                          size_t *lengthToReceive)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(request != NULL);
+   SDeviceAssert(request->Data != NULL);
    SDeviceAssert(lengthToReceive != NULL);
-   SDeviceAssert(handle->IsInitialized == true);
 
-   if(request->Size != __MODBUS_TCP_MBAP_HEADER_SIZE)
+   if(request->Size != MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
+      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
    }
 
-   const TcpAduData *requestAdu = (const TcpAduData *)request->Bytes;
+   const ModbusTcpAduData *mbapHeader = (const ModbusTcpAduData *)request->Data;
 
-   if(requestAdu->ProtocolId != __MODBUS_TCP_PROTOCOL_ID)
+   if(mbapHeader->ProtocolId != MODBUS_TCP_PROTOCOL_ID)
       return false;
 
-   memcpy(handle->Runtime->MbapHeaderBuffer, request->Bytes, __MODBUS_TCP_MBAP_HEADER_SIZE);
+   *lengthToReceive = mbapHeader->PacketSize;
+   memcpy(handle->Runtime.MbapHeaderBuffer, mbapHeader, MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE);
 
-   *lengthToReceive = requestAdu->PacketSize;
    return true;
 }
 
-bool ModbusTcpTryProcessRequest(__SDEVICE_HANDLE(ModbusTcp) *handle, ModbusRequest *request, ModbusResponse *response)
+bool ModbusTcpSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusTcp) *handle,
+                                       const ModbusSDeviceRequest *request,
+                                       ModbusSDeviceResponse *response)
 {
    SDeviceAssert(handle != NULL);
    SDeviceAssert(request != NULL);
    SDeviceAssert(response != NULL);
-   SDeviceAssert(handle->IsInitialized == true);
+   SDeviceAssert(request->Data != NULL);
+   SDeviceAssert(response->Data != NULL);
 
-   TcpAduData *mbapHeader = (TcpAduData *)handle->Runtime->MbapHeaderBuffer;
-   if(request->Size > __MODBUS_TCP_MAX_MESSAGE_SIZE - __MODBUS_TCP_MBAP_HEADER_SIZE ||
-      request->Size + __SIZEOF_MEMBER(TcpAduData, SlaveAddress) != mbapHeader->PacketSize)
+   const ModbusTcpAduData *mbapHeader = (const ModbusTcpAduData *)handle->Runtime.MbapHeaderBuffer;
+
+   if(request->Size > MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE ||
+      request->Size + SIZEOF_MEMBER(ModbusTcpAduData, SlaveAddress) != mbapHeader->PacketSize)
    {
-      SDeviceRuntimeErrorRaised(handle, MODBUS_RUNTIME_ERROR_WRONG_REQUEST_SIZE);
+      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
    }
 
-   TcpAduData *responseAdu = (TcpAduData *)response->Bytes;
-   ModbusResponse responsePdu = { responseAdu->PduBytes };
-   ModbusProcessingParameters processingParameters =
+   ModbusTcpAduData *responseAdu = (ModbusTcpAduData *)response->Data;
+   ModbusSDeviceResponse responsePdu = { responseAdu->PduBytes };
+
+   const ModbusProcessingParameters processingParameters =
    {
-      .RequestContext = &(ModbusTcpRequestContext)
+      .RegistersCallbacks = &handle->Init.RegistersCallbacks,
+      .RequestContext = &(const ModbusTcpSDeviceRequestContext)
       {
-         .Common.ModbusType = MODBUS_MODBUS_TYPE_TCP,
+         .Common.ProtocolType = MODBUS_SDEVICE_PROTOCOL_TYPE_TCP,
          .SlaveAddress = mbapHeader->SlaveAddress
       }
    };
 
-   if(TryProcessModbusPdu((SDeviceCommonHandle *)handle, processingParameters, request, &responsePdu) != true)
+   if(TryProcessRequestPdu(handle, &processingParameters, request, &responsePdu) != true)
       return false;
 
-   responseAdu->ProtocolId = __MODBUS_TCP_PROTOCOL_ID;
+   responseAdu->ProtocolId = MODBUS_TCP_PROTOCOL_ID;
    responseAdu->TransactionId = mbapHeader->TransactionId;
    responseAdu->SlaveAddress = mbapHeader->SlaveAddress;
-   responseAdu->PacketSize = responsePdu.Size + sizeof(TcpAduData) - offsetof(TcpAduData, SlaveAddress);
+   responseAdu->PacketSize = responsePdu.Size + SIZEOF_MEMBER(ModbusTcpAduData, SlaveAddress);
 
-   response->Size = responsePdu.Size + sizeof(TcpAduData);
+   response->Size = responsePdu.Size + sizeof(ModbusTcpAduData);
+
    return true;
 }
