@@ -23,10 +23,10 @@ static inline void InitializeCrc16(void)
    SDEVICE_INIT_DATA(TableCrc16) crc16Init =
    {
       .ExternalLookupTable = NULL,
-      .Polynomial = 0x8005,
-      .InitialValue = 0xFFFF,
-      .OutputXorValue = 0x0000,
-      .IsReverse = true
+      .Polynomial = MODBUS_RTU_SDEVICE_CRC16_POLYNOMIAL,
+      .InitialValue = MODBUS_RTU_SDEVICE_CRC16_INITIAL_VALUE,
+      .OutputXorValue = MODBUS_RTU_SDEVICE_CRC16_OUTPUT_XOR_VALUE,
+      .IsReverse = MODBUS_RTU_SDEVICE_CRC16_IS_REVERSE
    };
 
    SDeviceHandleIdentifier identifier = MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER;
