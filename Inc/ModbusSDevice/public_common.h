@@ -56,33 +56,6 @@ typedef struct
    uint16_t RegistersAddress;
 } ModbusSDeviceRegistersWriteParameters;
 
-typedef enum
-{
-   MODBUS_SDEVICE_STATUS_OK,
-   MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST,
-   MODBUS_SDEVICE_STATUS_REGISTER_ACCESS_FAIL,
-   MODBUS_SDEVICE_STATUS_REGISTERS_COUNT_MISMATCH,
-   MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE,
-} ModbusSDeviceStatus;
-
-SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
-SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusTcp);
-
-typedef union __attribute__((transparent_union))
-{
-   SDEVICE_HANDLE(ModbusRtu) *AsRtu;
-   SDEVICE_HANDLE(ModbusTcp) *AsTcp;
-   void *AsAny;
-} ModbusSDeviceCommonHandle;
-
-typedef struct
-{
-   ModbusSDeviceProtocolException (* ReadRegisters)(ModbusSDeviceCommonHandle handle,
-                                                    const ModbusSDeviceRegistersReadParameters *parameters);
-   ModbusSDeviceProtocolException (* WriteRegisters)(ModbusSDeviceCommonHandle handle,
-                                                     const ModbusSDeviceRegistersWriteParameters *parameters);
-} ModbusSDeviceRegistersCallbacks;
-
 typedef struct
 {
    enum
@@ -91,6 +64,21 @@ typedef struct
       MODBUS_SDEVICE_PROTOCOL_TYPE_TCP
    } ProtocolType;
 } ModbusSDeviceRequestContext;
+
+typedef struct
+{
+   ModbusSDeviceProtocolException (* Read)(void *handle, const ModbusSDeviceRegistersReadParameters *parameters);
+   ModbusSDeviceProtocolException (* Write)(void *handle, const ModbusSDeviceRegistersWriteParameters *parameters);
+} ModbusSDeviceRegistersCallbacks;
+
+typedef enum
+{
+   MODBUS_SDEVICE_STATUS_OK,
+   MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST,
+   MODBUS_SDEVICE_STATUS_REGISTER_ACCESS_FAIL,
+   MODBUS_SDEVICE_STATUS_REGISTERS_COUNT_MISMATCH,
+   MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE,
+} ModbusSDeviceStatus;
 
 typedef struct
 {

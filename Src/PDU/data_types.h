@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../private_rtu.h"
-#include "../private_tcp.h"
+#include "ModbusSDevice/public_common.h"
 
 #define MAX_PDU_SIZE 253U
 
@@ -11,7 +10,7 @@ typedef struct
    ModbusSDeviceRegistersCallbacks *RegistersCallbacks;
 } ModbusProcessingParameters;
 
-typedef ModbusSDeviceProtocolException (* ModbusFunction)(ModbusSDeviceCommonHandle handle,
+typedef ModbusSDeviceProtocolException (* ModbusFunction)(void *handle,
                                                           const ModbusProcessingParameters *parameters,
                                                           const ModbusSDeviceRequest *request,
                                                           ModbusSDeviceResponse *response);

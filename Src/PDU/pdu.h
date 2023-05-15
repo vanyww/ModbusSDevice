@@ -3,7 +3,9 @@
 #include "Functions/03Function/03_function.h"
 #include "Functions/16Function/16_function.h"
 
-#define EXCEPTION_RESPONSE_FUNCTION_CODE_FLAG_MASK ((uint8_t)0x80)
+#include <stdbool.h>
+
+#define MODBUS_EXCEPTION_RESPONSE_FUNCTION_CODE_FLAG_MASK ((uint8_t)0x80)
 
 typedef struct
 {
@@ -24,23 +26,23 @@ typedef enum
    FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS = 0x10
 } FunctionCode;
 
-static void EncodeExceptionResponsePdu(ModbusSDeviceCommonHandle handle,
+static void EncodeExceptionResponsePdu(void *handle,
                                        ModbusSDeviceStatus exceptionCode,
                                        uint8_t functionCode,
                                        ModbusSDeviceResponse *response)
 {
    SDeviceDebugAssert(response != NULL);
-   SDeviceDebugAssert(handle.AsAny != NULL);
+   SDeviceDebugAssert(handle != NULL);
 
    ExceptionPdu *responseData = response->Data;
 
-   responseData->FunctionCode = functionCode | EXCEPTION_RESPONSE_FUNCTION_CODE_FLAG_MASK;
+   responseData->FunctionCode = functionCode | MODBUS_EXCEPTION_RESPONSE_FUNCTION_CODE_FLAG_MASK;
    responseData->ExceptionCode = exceptionCode;
 
    response->Size = sizeof(ExceptionPdu);
 }
 
-static bool TryProcessRequestPdu(ModbusSDeviceCommonHandle handle,
+static bool TryProcessRequestPdu(void *handle,
                                  const ModbusProcessingParameters *parameters,
                                  const ModbusSDeviceRequest *request,
                                  ModbusSDeviceResponse *response)
@@ -48,7 +50,7 @@ static bool TryProcessRequestPdu(ModbusSDeviceCommonHandle handle,
    SDeviceDebugAssert(request != NULL);
    SDeviceDebugAssert(response != NULL);
    SDeviceDebugAssert(parameters != NULL);
-   SDeviceDebugAssert(handle.AsAny != NULL);
+   SDeviceDebugAssert(handle != NULL);
 
    if(request->Size < sizeof(CommonPdu))
       return false;
@@ -71,7 +73,7 @@ static bool TryProcessRequestPdu(ModbusSDeviceCommonHandle handle,
          break;
 
       default:
-         SDeviceLogStatus(handle.AsAny, MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE);
+         SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE);
          EncodeExceptionResponsePdu(handle, MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE, functionCode, response);
          return true;
    }

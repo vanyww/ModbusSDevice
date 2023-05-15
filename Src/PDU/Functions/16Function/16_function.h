@@ -4,7 +4,7 @@
 
 #include "SDeviceCore/errors.h"
 
-static ModbusSDeviceProtocolException Process16FunctionRequest(ModbusSDeviceCommonHandle handle,
+static ModbusSDeviceProtocolException Process16FunctionRequest(void *handle,
                                                                const ModbusProcessingParameters *parameters,
                                                                const ModbusSDeviceRequest *request,
                                                                ModbusSDeviceResponse *response)
@@ -12,11 +12,11 @@ static ModbusSDeviceProtocolException Process16FunctionRequest(ModbusSDeviceComm
    SDeviceDebugAssert(request != NULL);
    SDeviceDebugAssert(response != NULL);
    SDeviceDebugAssert(parameters != NULL);
-   SDeviceDebugAssert(handle.AsAny != NULL);
+   SDeviceDebugAssert(handle != NULL);
 
    if(request->Size < sizeof(Function16Request))
    {
-      SDeviceLogStatus(handle.AsAny, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
    }
 
@@ -27,25 +27,25 @@ static ModbusSDeviceProtocolException Process16FunctionRequest(ModbusSDeviceComm
       requestData->BytesToFollow % sizeof(ModbusSDeviceRegister) != 0                           ||
       requestData->BytesToFollow != request->Size - sizeof(Function16Request))
    {
-      SDeviceLogStatus(handle.AsAny, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_ERROR;
    }
 
    uint16_t registersAddress = requestData->RegistersAddress;
    size_t registersCount = requestData->RegistersCount;
    ModbusSDeviceProtocolException status =
-            parameters->RegistersCallbacks->WriteRegisters(handle,
-                                                           &(const ModbusSDeviceRegistersWriteParameters)
-                                                           {
-                                                              .Data.AsPlain = requestData->RegistersBuffer,
-                                                              .RequestContext = parameters->RequestContext,
-                                                              .RegistersAddress = registersAddress,
-                                                              .RegistersCount = registersCount,
-                                                           });
+            parameters->RegistersCallbacks->Write(handle,
+                                                  &(const ModbusSDeviceRegistersWriteParameters)
+                                                  {
+                                                     .Data.AsPlain = requestData->RegistersBuffer,
+                                                     .RequestContext = parameters->RequestContext,
+                                                     .RegistersAddress = registersAddress,
+                                                     .RegistersCount = registersCount,
+                                                  });
 
    if(status != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
    {
-      SDeviceLogStatus(handle.AsAny, MODBUS_SDEVICE_STATUS_REGISTER_ACCESS_FAIL);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_REGISTER_ACCESS_FAIL);
       return status;
    }
 

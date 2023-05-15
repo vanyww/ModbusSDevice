@@ -23,8 +23,10 @@
       MODBUS_RTU_SDEVICE_INTERFRAME_DELAY_PREDEFINED                       :                                           \
       MODBUS_RTU_SDEVICE_CHARS_TO_SECONDS_DELAY(baud, MODBUS_RTU_SDEVICE_INTERFRAME_DELAY_CHARS, char_size))
 
-#define MODBUS_RTU_SDEVICE_MAX_VALID_SLAVE_ADDRESS 247
-#define MODBUS_RTU_SDEVICE_BROADCAST_REQUEST_SLAVE_ADDRESS 0
+#define MODBUS_RTU_SDEVICE_CRC16_POLYNOMIAL 0x8005
+#define MODBUS_RTU_SDEVICE_CRC16_INITIAL_VALUE 0xFFFF
+#define MODBUS_RTU_SDEVICE_CRC16_OUTPUT_XOR_VALUE 0x0000
+#define MODBUS_RTU_SDEVICE_CRC16_IS_REVERSE true
 
 #define MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE 256 /* 253 (max PDU) + 3 (ADU members) */
 
@@ -33,10 +35,13 @@ typedef struct
    ModbusSDeviceRequestContext Common;
    enum
    {
-      MODBUS_RTU_SDEVICE_REQUEST_TYPE_NORMAL,
+      MODBUS_RTU_SDEVICE_REQUEST_TYPE_UNICAST,
       MODBUS_RTU_SDEVICE_REQUEST_TYPE_BROADCAST
    } RequestType;
 } ModbusRtuSDeviceRequestContext;
+
+SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
+SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 typedef enum
 {
@@ -49,17 +54,18 @@ typedef enum
    MODBUS_RTU_SDEVICE_STATUS_SLAVE_ADDRESS_INVALID_SET
 } ModbusRtuSDeviceStatus;
 
-SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusRtu);
-
 SDEVICE_INIT_DATA_DECLARATION(ModbusRtu)
 {
    ModbusSDeviceRegistersCallbacks RegistersCallbacks;
-#ifdef MODBUS_RTU_SDEVICE_USE_EXTERN_CRC
+
+#if !defined MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
    uint16_t (* ComputeCrc16)(SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t size);
 #endif
 };
 
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, parent, identifier, context);
+SDEVICE_STRING_NAME_DECLARATION(ModbusRtu);
+
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, owner, identifier, context);
 SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer);
 
 SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusRtu, SlaveAddress, uint8_t);

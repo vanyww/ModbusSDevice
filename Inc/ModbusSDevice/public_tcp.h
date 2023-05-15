@@ -13,6 +13,9 @@ typedef struct
    uint8_t SlaveAddress;
 } ModbusTcpSDeviceRequestContext;
 
+SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusTcp);
+SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusTcp);
+
 typedef enum
 {
    MODBUS_TCP_SDEVICE_STATUS_OK                          = MODBUS_SDEVICE_STATUS_OK,
@@ -22,14 +25,14 @@ typedef enum
    MODBUS_TCP_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE = MODBUS_SDEVICE_STATUS_UNIMPLEMENTED_FUNCTION_CODE,
 } ModbusTcpSDeviceStatus;
 
-SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusTcp);
-
 SDEVICE_INIT_DATA_DECLARATION(ModbusTcp)
 {
    ModbusSDeviceRegistersCallbacks RegistersCallbacks;
 };
 
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, parent, identifier, context);
+SDEVICE_STRING_NAME_DECLARATION(ModbusTcp);
+
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, owner, identifier, context);
 SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer);
 
 bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,

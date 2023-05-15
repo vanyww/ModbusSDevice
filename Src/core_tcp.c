@@ -1,3 +1,4 @@
+#include "private_tcp.h"
 #include "PDU/pdu.h"
 
 #include "SDeviceCore/heap.h"
@@ -17,27 +18,27 @@ typedef struct __attribute__((packed, scalar_storage_order("big-endian")))
    uint8_t PduBytes[];
 } ModbusTcpAduData;
 
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, parent, identifier, context)
+SDEVICE_STRING_NAME_DEFINITION(ModbusTcp);
+
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, owner, identifier, context)
 {
    SDeviceAssert(init != NULL);
 
-   const SDEVICE_INIT_DATA(ModbusTcp) *_init = init;
+   const ThisInitData *_init = init;
 
-   SDeviceAssert(_init->RegistersCallbacks.ReadRegisters != NULL);
-   SDeviceAssert(_init->RegistersCallbacks.WriteRegisters != NULL);
+   SDeviceAssert(_init->RegistersCallbacks.Read != NULL);
+   SDeviceAssert(_init->RegistersCallbacks.Write != NULL);
 
-   SDEVICE_HANDLE(ModbusTcp) *handle = SDeviceMalloc(sizeof(SDEVICE_HANDLE(ModbusTcp)));
-
-   SDeviceAssert(handle != NULL);
-
-   handle->Init = *_init;
+   ThisHandle *handle = SDeviceMalloc(sizeof(SDEVICE_HANDLE(ModbusTcp)));
    handle->Header = (SDeviceHandleHeader)
    {
       .Context = context,
-      .ParentHandle = parent,
-      .Identifier = identifier,
-      .LatestStatus = MODBUS_TCP_SDEVICE_STATUS_OK
+      .OwnerHandle = owner,
+      .SDeviceStringName = SDEVICE_STRING_NAME(ModbusTcp),
+      .LatestStatus = MODBUS_TCP_SDEVICE_STATUS_OK,
+      .Identifier = identifier
    };
+   handle->Init = *_init;
 
    return handle;
 }
@@ -46,8 +47,8 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
 {
    SDeviceAssert(handlePointer != NULL);
 
-   SDEVICE_HANDLE(ModbusTcp) **_handlePointer = handlePointer;
-   SDEVICE_HANDLE(ModbusTcp) *handle = *_handlePointer;
+   ThisHandle **_handlePointer = handlePointer;
+   ThisHandle *handle = *_handlePointer;
 
    SDeviceAssert(handle != NULL);
 
@@ -55,7 +56,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
    *_handlePointer = NULL;
 }
 
-bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,
+bool ModbusTcpSDeviceTryProcessMbapHeader(ThisHandle *handle,
                                           const ModbusSDeviceRequest *request,
                                           size_t *lengthToReceive)
 {
@@ -81,7 +82,7 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,
    return true;
 }
 
-bool ModbusTcpSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusTcp) *handle,
+bool ModbusTcpSDeviceTryProcessRequest(ThisHandle *handle,
                                        const ModbusSDeviceRequest *request,
                                        ModbusSDeviceResponse *response)
 {
