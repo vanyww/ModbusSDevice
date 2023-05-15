@@ -1,10 +1,6 @@
 #pragma once
 
-#include "SDeviceCore/core.h"
-
-#if (SDEVICE_CORE_VERSION_MAJOR != 7) || (SDEVICE_CORE_VERSION_MINOR < 0)
-#error Incorrect SDeviceCore version.
-#endif
+#include "config.h"
 
 #define MODBUS_SDEVICE_VERSION_MAJOR 1
 #define MODBUS_SDEVICE_VERSION_MINOR 0
