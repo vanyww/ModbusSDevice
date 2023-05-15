@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../private_rtu.h"
+#include "../static_internal_rtu.h"
 
 #include "SDeviceCore/errors.h"
 
@@ -30,7 +30,8 @@ static inline void InitializeCrc16(void)
    };
 
    SDeviceHandleIdentifier identifier = MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER;
-   ModbusRtuSDeviceInternalCrc16Handle = SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, NULL, identifier, NULL);
+   ModbusRtuSDeviceInternalCrc16Handle =
+         SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, ModbusRtuStaticInternalSDeviceHandle, identifier, NULL);
 #endif
 }
 
