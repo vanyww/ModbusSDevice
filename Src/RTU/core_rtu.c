@@ -1,5 +1,5 @@
-#include "PDU/pdu.h"
-#include "Crc/crc.h"
+#include "../Common/PDU/pdu.h"
+#include "../Common/Crc/crc.h"
 
 #include "SDeviceCore/heap.h"
 

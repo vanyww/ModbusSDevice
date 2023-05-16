@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../static_internal_rtu.h"
+#include "../../RTU/static_internal_rtu.h"
 
 #include "SDeviceCore/errors.h"
 

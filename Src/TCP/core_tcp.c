@@ -1,5 +1,5 @@
 #include "private_tcp.h"
-#include "PDU/pdu.h"
+#include "../Common/PDU/pdu.h"
 
 #include "SDeviceCore/heap.h"
 #include "SDeviceCore/errors.h"
