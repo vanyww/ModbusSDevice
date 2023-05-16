@@ -73,12 +73,14 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(ThisHandle *handle,
 
    const ModbusTcpAduData *mbapHeader = (const ModbusTcpAduData *)request->Data;
 
-   if(mbapHeader->ProtocolId != MODBUS_TCP_PROTOCOL_ID)
+   if(mbapHeader->ProtocolId != MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID)
       return false;
 
-   *lengthToReceive = mbapHeader->PacketSize;
-   memcpy(handle->Runtime.MbapHeaderBuffer, mbapHeader, MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE);
+   handle->Runtime.MbapHeaderData.PacketSize = mbapHeader->PacketSize;
+   handle->Runtime.MbapHeaderData.SlaveAddress = mbapHeader->SlaveAddress;
+   handle->Runtime.MbapHeaderData.TransactionId = mbapHeader->TransactionId;
 
+   *lengthToReceive = handle->Runtime.MbapHeaderData.PacketSize;
    return true;
 }
 
@@ -92,10 +94,8 @@ bool ModbusTcpSDeviceTryProcessRequest(ThisHandle *handle,
    SDeviceAssert(request->Data != NULL);
    SDeviceAssert(response->Data != NULL);
 
-   const ModbusTcpAduData *mbapHeader = (const ModbusTcpAduData *)handle->Runtime.MbapHeaderBuffer;
-
    if(request->Size > MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE ||
-      request->Size + SIZEOF_MEMBER(ModbusTcpAduData, SlaveAddress) != mbapHeader->PacketSize)
+      request->Size + SIZEOF_MEMBER(ModbusTcpAduData, SlaveAddress) != handle->Runtime.MbapHeaderData.PacketSize)
    {
       SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
@@ -110,16 +110,16 @@ bool ModbusTcpSDeviceTryProcessRequest(ThisHandle *handle,
       .RequestContext = &(const ModbusTcpSDeviceRequestContext)
       {
          .Common.ProtocolType = MODBUS_SDEVICE_PROTOCOL_TYPE_TCP,
-         .SlaveAddress = mbapHeader->SlaveAddress
+         .SlaveAddress = handle->Runtime.MbapHeaderData.SlaveAddress
       }
    };
 
    if(TryProcessRequestPdu(handle, &processingParameters, request, &responsePdu) != true)
       return false;
 
-   responseAdu->ProtocolId = MODBUS_TCP_PROTOCOL_ID;
-   responseAdu->TransactionId = mbapHeader->TransactionId;
-   responseAdu->SlaveAddress = mbapHeader->SlaveAddress;
+   responseAdu->ProtocolId = MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID;
+   responseAdu->TransactionId = handle->Runtime.MbapHeaderData.TransactionId;
+   responseAdu->SlaveAddress = handle->Runtime.MbapHeaderData.SlaveAddress;
    responseAdu->PacketSize = responsePdu.Size + SIZEOF_MEMBER(ModbusTcpAduData, SlaveAddress);
 
    response->Size = responsePdu.Size + sizeof(ModbusTcpAduData);
