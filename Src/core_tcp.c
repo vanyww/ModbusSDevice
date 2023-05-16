@@ -7,7 +7,7 @@
 
 #include <memory.h>
 
-#define MODBUS_TCP_PROTOCOL_ID 0x0000
+#define MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID 0x0000
 
 typedef struct __attribute__((packed, scalar_storage_order("big-endian")))
 {
