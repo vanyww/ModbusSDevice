@@ -1,0 +1,13 @@
+#pragma once
+
+#include "ModbusSDevice/public_udp.h"
+
+SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusUdp);
+
+SDEVICE_RUNTIME_DATA_DECLARATION(ModbusUdp)
+{
+   SDEVICE_HANDLE(Modbus) *BaseHandle;
+};
+
+SDEVICE_HANDLE_DECLARATION(ModbusUdp);
+SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusUdp);
