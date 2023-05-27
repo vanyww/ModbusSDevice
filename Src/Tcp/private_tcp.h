@@ -6,11 +6,12 @@ SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusTcp)
 {
+   SDEVICE_HANDLE(Modbus) *BaseHandle;
    struct
    {
       uint16_t TransactionId;
       uint16_t PacketSize;
-      uint8_t SlaveAddress;
+      uint8_t  SlaveAddress;
    } MbapHeaderData;
 };
 

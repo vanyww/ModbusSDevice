@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../RTU/static_internal_rtu.h"
+#include "../private_static_rtu.h"
 
 #include "SDeviceCore/errors.h"
 
@@ -23,10 +23,10 @@ static inline void InitializeCrc16(void)
    SDEVICE_INIT_DATA(TableCrc16) crc16Init =
    {
       .ExternalLookupTable = NULL,
-      .Polynomial = MODBUS_RTU_SDEVICE_CRC16_POLYNOMIAL,
-      .InitialValue = MODBUS_RTU_SDEVICE_CRC16_INITIAL_VALUE,
-      .OutputXorValue = MODBUS_RTU_SDEVICE_CRC16_OUTPUT_XOR_VALUE,
-      .IsReverse = MODBUS_RTU_SDEVICE_CRC16_IS_REVERSE
+      .Polynomial          = MODBUS_RTU_SDEVICE_CRC16_POLYNOMIAL,
+      .InitialValue        = MODBUS_RTU_SDEVICE_CRC16_INITIAL_VALUE,
+      .OutputXorValue      = MODBUS_RTU_SDEVICE_CRC16_OUTPUT_XOR_VALUE,
+      .IsReverse           = MODBUS_RTU_SDEVICE_CRC16_IS_REVERSE
    };
 
    SDeviceHandleIdentifier identifier = MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER;

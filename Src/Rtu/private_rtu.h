@@ -6,6 +6,7 @@ SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusRtu)
 {
+   SDEVICE_HANDLE(Modbus) *BaseHandle;
    SDEVICE_PROPERTY_TYPE(ModbusRtu, SlaveAddress) SlaveAddress;
 };
 
