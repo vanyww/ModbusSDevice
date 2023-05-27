@@ -28,3 +28,17 @@ SDEVICE_HANDLE(ModbusTcp) * CreateModbusTcpSDevice(void)
 
    return handle;
 }
+
+const uint8_t ModbusUdpBtuAddress[] = { 1, 2, 3, 4, 5, 6 };
+
+SDEVICE_HANDLE(ModbusUdp) * CreateModbusUdpSDevice(void)
+{
+   SDEVICE_INIT_DATA(ModbusUdp) init = { { ReadRegistersMock, WriteRegistersMock }, ModbusUdpBtuAddress};
+   SDEVICE_HANDLE(ModbusUdp) * handle = SDEVICE_CREATE_HANDLE(ModbusUdp)(&init, NULL, 0, NULL);
+
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+
+   return handle;
+}
+

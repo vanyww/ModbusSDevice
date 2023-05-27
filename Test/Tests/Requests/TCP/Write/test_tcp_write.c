@@ -13,26 +13,27 @@ bool TestTcpWriteOneRequest(void)
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x09, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01 };
-   ModbusSDeviceRequest mbapData = { .Data = request, .Size = MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE };
-   ModbusSDeviceRequest requestData =
-   {
-      .Data = request + MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE,
-      .Size = sizeof(request) - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE
-   };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE]){ } };
-
+   uint8_t replyBuffer[MODBUS_TCP_SDEVICE_MAX_REQUEST_SIZE];
    size_t packetSize;
+   size_t replySize;
 
-   if(ModbusTcpSDeviceTryProcessMbapHeader(handle, &mbapData, &packetSize) != true)
+   ModbusTcpSDeviceInput input =
+   {
+      request + MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE,
+      sizeof(request) - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE
+   };
+   ModbusTcpSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusTcpSDeviceTryProcessMbapHeader(handle, request, &packetSize) != true)
       return false;
 
-   if(ModbusTcpSDeviceTryProcessRequest(handle, &requestData, &responseData) != true)
+   if(ModbusTcpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(responseData.Size != sizeof(expectedReply))
+   if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Data, responseData.Size) != 0)
+   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
       return false;
 
    if(MockWriteRegisters[0] != 0x2211)
@@ -52,26 +53,27 @@ bool TestTcpWriteMultipleRequest(void)
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x0B, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44 };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02 };
-   ModbusSDeviceRequest mbapData = { .Data = request, .Size = MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE };
-   ModbusSDeviceRequest requestData =
-   {
-      .Data = request + MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE,
-      .Size = sizeof(request) - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE
-   };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE]){ } };
-
+   uint8_t replyBuffer[MODBUS_TCP_SDEVICE_MAX_REQUEST_SIZE];
    size_t packetSize;
+   size_t replySize;
 
-   if(ModbusTcpSDeviceTryProcessMbapHeader(handle, &mbapData, &packetSize) != true)
+   ModbusTcpSDeviceInput input =
+   {
+      request + MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE,
+      sizeof(request) - MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE
+   };
+   ModbusTcpSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusTcpSDeviceTryProcessMbapHeader(handle, request, &packetSize) != true)
       return false;
 
-   if(ModbusTcpSDeviceTryProcessRequest(handle, &requestData, &responseData) != true)
+   if(ModbusTcpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(responseData.Size != sizeof(expectedReply))
+   if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Data, responseData.Size) != 0)
+   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
       return false;
 
    if(MockWriteRegisters[0] != 0x2211)

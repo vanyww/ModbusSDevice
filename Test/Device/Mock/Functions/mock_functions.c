@@ -2,31 +2,31 @@
 
 #include <memory.h>
 
-ModbusSDeviceRegister MockReadRegisters[MOCK_REGISTERS_COUNT];
-ModbusSDeviceRegister MockWriteRegisters[MOCK_REGISTERS_COUNT];
+uint16_t MockReadRegisters[MOCK_REGISTERS_COUNT];
+uint16_t MockWriteRegisters[MOCK_REGISTERS_COUNT];
 
-ModbusSDeviceProtocolException ReadRegistersMock(ModbusSDeviceCommonHandle handle,
-                                                 const ModbusSDeviceRegistersReadParameters *parameters)
+ModbusSDeviceProtocolException ReadRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
+                                                 const ModbusSDeviceReadOperationParameters *parameters)
 {
    if(parameters->RegistersAddress + parameters->RegistersCount > MOCK_REGISTERS_COUNT)
-      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_ADDRESS_ERROR;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
-   memcpy(parameters->Data.AsPlain,
+   memcpy(parameters->RegistersData,
           &MockReadRegisters[parameters->RegistersAddress],
-          parameters->RegistersCount * sizeof(ModbusSDeviceRegister));
+          parameters->RegistersCount * MODBUS_SDEVICE_REGISTER_SIZE);
 
    return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }
 
-ModbusSDeviceProtocolException WriteRegistersMock(ModbusSDeviceCommonHandle handle,
-                                                  const ModbusSDeviceRegistersWriteParameters *parameters)
+ModbusSDeviceProtocolException WriteRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
+                                                  const ModbusSDeviceWriteOperationParameters *parameters)
 {
    if(parameters->RegistersAddress + parameters->RegistersCount > MOCK_REGISTERS_COUNT)
-      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_ADDRESS_ERROR;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_ADDRESS;
 
    memcpy(&MockWriteRegisters[parameters->RegistersAddress],
-          parameters->Data.AsPlain,
-          parameters->RegistersCount * sizeof(ModbusSDeviceRegister));
+          parameters->RegistersData,
+          parameters->RegistersCount * MODBUS_SDEVICE_REGISTER_SIZE);
 
    return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }

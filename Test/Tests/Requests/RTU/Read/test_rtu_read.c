@@ -16,19 +16,26 @@ bool TestRtuReadOneRequest(void)
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x01, 0x9D, 0xD1 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x02, 0xCC, 0xBB, 0x88, 0xEF };
-   ModbusSDeviceRequest requestData = { .Data = request, .Size = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_REQUEST_SIZE];
+   size_t replySize;
 
-   if(ModbusRtuSDeviceTryProcessRequest(handle, &requestData, &responseData) != true)
+   ModbusRtuSDeviceInput input =
+   {
+      request,
+      sizeof(request)
+   };
+   ModbusRtuSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
    if(AnyErrorDetected())
       return false;
 
-   if(responseData.Size != sizeof(expectedReply))
+   if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Data, responseData.Size) != 0)
+   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -47,19 +54,26 @@ bool TestRtuReadMultipleRequest(void)
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0x03, 0x1C, 0x10 };
    const uint8_t expectedReply[] = { 0xAA, 0x03, 0x06, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0xA1, 0x2F };
-   ModbusSDeviceRequest requestData = { .Data = request, .Size = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_REQUEST_SIZE];
+   size_t replySize;
 
-   if(ModbusRtuSDeviceTryProcessRequest(handle, &requestData, &responseData) != true)
+   ModbusRtuSDeviceInput input =
+   {
+      request,
+      sizeof(request)
+   };
+   ModbusRtuSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
    if(AnyErrorDetected())
       return false;
 
-   if(responseData.Size != sizeof(expectedReply))
+   if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Data, responseData.Size) != 0)
+   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -74,19 +88,26 @@ bool TestRtuReadTooManyRequest(void)
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { 0xAA, 0x83, 0x03, 0x70, 0xD1 };
-   ModbusSDeviceRequest requestData = { .Data = request, .Size = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_REQUEST_SIZE];
+   size_t replySize;
 
-   if(ModbusRtuSDeviceTryProcessRequest(handle, &requestData, &responseData) != true)
+   ModbusRtuSDeviceInput input =
+   {
+      request,
+      sizeof(request)
+   };
+   ModbusRtuSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
    if(!AnyErrorDetected())
       return false;
 
-   if(responseData.Size != sizeof(expectedReply))
+   if(replySize != sizeof(expectedReply))
       return false;
 
-   if(memcmp(expectedReply, responseData.Data, responseData.Size) != 0)
+   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
       return false;
 
    return true;
@@ -100,10 +121,17 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
    SDEVICE_SET_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
-   ModbusSDeviceRequest requestData = { .Data = request, .Size = sizeof(request) };
-   ModbusSDeviceResponse responseData = { .Data = (uint8_t[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE]){ } };
+   uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_REQUEST_SIZE];
+   size_t replySize;
 
-   if(ModbusRtuSDeviceTryProcessRequest(handle, &requestData, &responseData) != false)
+   ModbusRtuSDeviceInput input =
+   {
+      request,
+      sizeof(request)
+   };
+   ModbusRtuSDeviceOutput output = { replyBuffer, &replySize };
+
+   if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) == true)
       return false;
 
    if(AnyErrorDetected())

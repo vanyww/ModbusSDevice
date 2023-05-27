@@ -1,13 +1,13 @@
 #pragma once
 
-#include "ModbusSDevice/public_common.h"
+#include "ModbusSDevice/public_base.h"
 
 #define MOCK_REGISTERS_COUNT 5U
 
-extern ModbusSDeviceRegister MockReadRegisters[MOCK_REGISTERS_COUNT];
-extern ModbusSDeviceRegister MockWriteRegisters[MOCK_REGISTERS_COUNT];
+extern uint16_t MockReadRegisters[MOCK_REGISTERS_COUNT];
+extern uint16_t MockWriteRegisters[MOCK_REGISTERS_COUNT];
 
-ModbusSDeviceProtocolException ReadRegistersMock(ModbusSDeviceCommonHandle handle,
-                                                 const ModbusSDeviceRegistersReadParameters *parameters);
-ModbusSDeviceProtocolException WriteRegistersMock(ModbusSDeviceCommonHandle handle,
-                                                  const ModbusSDeviceRegistersWriteParameters *parameters);
+ModbusSDeviceProtocolException ReadRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
+                                                 const ModbusSDeviceReadOperationParameters *parameters);
+ModbusSDeviceProtocolException WriteRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
+                                                  const ModbusSDeviceWriteOperationParameters *parameters);

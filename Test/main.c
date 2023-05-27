@@ -3,6 +3,7 @@
 #include "Tests/Requests/RTU/Write/test_rtu_write.h"
 #include "Tests/Requests/TCP/Read/test_tcp_read.h"
 #include "Tests/Requests/TCP/Write/test_tcp_write.h"
+#include "Tests/Requests/UDP/Read/test_udp_read.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +28,11 @@ struct
    { TestTcpReadMultipleRequest, "tcp read multiple registers" },
    { TestTcpReadTooManyRequest, "tcp read too many registers" },
    { TestTcpWriteOneRequest, "tcp write one register" },
-   { TestTcpWriteMultipleRequest, "tcp write multiple registers" }
+   { TestTcpWriteMultipleRequest, "tcp write multiple registers" },
+
+   { TestUdpReadOneRequest, "udp read one register" },
+   { TestUdpReadMultipleRequest, "udp read multiple registers" },
+   { TestUdpReadOneBtuRequest, "udp btu read one register" }
 };
 
 const size_t TestFunctionsCount = sizeof(TestFunctions) / sizeof(*TestFunctions);
