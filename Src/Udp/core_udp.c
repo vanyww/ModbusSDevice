@@ -3,7 +3,7 @@
 #include "SDeviceCore/heap.h"
 
 #define MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID 0x0000
-#define MODBUS_UDP_BROADCAST_MBAP_HEADER_PROTOCOL_ID 0x0074
+#define MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID 0x0074
 
 #define EMPTY_UDP_ADU_SIZE (sizeof(UdpAdu) - SIZEOF_MEMBER(UdpAdu, Data))
 
@@ -112,7 +112,7 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
                                                               });
          break;
 
-      case __builtin_bswap16(MODBUS_UDP_BROADCAST_MBAP_HEADER_PROTOCOL_ID):
+      case __builtin_bswap16(MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID):
          context.IsBroadcast = false;
          processingStatus = TryProcessRequestUdpBtuBlock(handle,
                                                          &context,
