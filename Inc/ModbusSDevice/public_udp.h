@@ -4,9 +4,9 @@
 
 #include <stdbool.h>
 
-#define MODBUS_UDP_SDEVICE_MAX_REQUEST_SIZE ((size_t)260)
-#define MODBUS_UDP_SDEVICE_MAX_BTU_REQUEST_SIZE (MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE +                                 \
-                                                 MODBUS_UDP_SDEVICE_MAX_REQUEST_SIZE)
+#define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE ((size_t)260)
+#define MODBUS_UDP_SDEVICE_MAX_BTU_MESSAGE_SIZE (MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE +                                 \
+                                                 MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE)
 
 typedef struct
 {

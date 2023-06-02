@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE 7U
-#define MODBUS_TCP_SDEVICE_MAX_REQUEST_SIZE 253U
+#define MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE 253U
 
 typedef struct
 {
