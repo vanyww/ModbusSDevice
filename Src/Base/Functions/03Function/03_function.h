@@ -39,9 +39,9 @@ static ModbusSDeviceProtocolException ProcessRequest03Function(ThisHandle    *ha
                                     {
                                        .RegistersData    = response->RegistersData,
                                        .RegistersAddress = registersAddress,
-                                       .RegistersCount   = registersCount,
-                                       .Context          = operationContext
-                                    });
+                                       .RegistersCount   = registersCount
+                                    },
+                                    operationContext);
 
    if(operationException != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
    {

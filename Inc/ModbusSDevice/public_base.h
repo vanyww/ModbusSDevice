@@ -43,7 +43,6 @@ typedef enum
 
 typedef struct
 {
-   const void *Context;
    void       *RegistersData;
    uint16_t    RegistersCount;
    uint16_t    RegistersAddress;
@@ -51,7 +50,6 @@ typedef struct
 
 typedef struct
 {
-   const void *Context;
    const void *RegistersData;
    uint16_t    RegistersCount;
    uint16_t    RegistersAddress;
@@ -60,9 +58,11 @@ typedef struct
 SDEVICE_INIT_DATA_DECLARATION(Modbus)
 {
    ModbusSDeviceProtocolException (* ReadOperation)(SDEVICE_HANDLE(Modbus)                     *handle,
-                                                    const ModbusSDeviceReadOperationParameters *parameters);
+                                                    const ModbusSDeviceReadOperationParameters *parameters,
+                                                    const void                                 *callContext);
    ModbusSDeviceProtocolException (* WriteOperation)(SDEVICE_HANDLE(Modbus)                      *handle,
-                                                     const ModbusSDeviceWriteOperationParameters *parameters);
+                                                     const ModbusSDeviceWriteOperationParameters *parameters,
+                                                     const void                                  *callContext);
 };
 
 SDEVICE_STRING_NAME_DECLARATION(Modbus);
