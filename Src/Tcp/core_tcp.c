@@ -85,7 +85,7 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(ThisHandle *handle,
    handle->Runtime.MbapHeaderData.SlaveAddress = mbapHeader->SlaveAddress;
    handle->Runtime.MbapHeaderData.TransactionId = mbapHeader->TransactionId;
 
-   *requestSizeToReceive = handle->Runtime.MbapHeaderData.PacketSize;
+   *requestSizeToReceive = handle->Runtime.MbapHeaderData.PacketSize - 1;
 
    return true;
 }
