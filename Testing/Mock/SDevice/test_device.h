@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ModbusSDevice/public_rtu.h"
-#include "ModbusSDevice/public_tcp.h"
-#include "ModbusSDevice/public_udp.h"
+#include "ModbusSDevice/Rtu/public.h"
+#include "ModbusSDevice/Tcp/public.h"
+#include "ModbusSDevice/Udp/public.h"
 
 extern const uint8_t ModbusUdpBtuAddress[];
 

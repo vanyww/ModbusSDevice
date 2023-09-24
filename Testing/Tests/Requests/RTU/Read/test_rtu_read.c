@@ -1,9 +1,10 @@
 #include "test_rtu_read.h"
-#include "../../../../Device/test_device.h"
-#include "../../../../Device/Mock/Errors/errors.h"
-#include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Mock/Errors/errors.h"
+#include "../../../../Mock/SDevice/test_device.h"
+#include "../../../../Mock/SDevice/Bindings/bindings.h"
 
 #include <memory.h>
+
 
 bool TestRtuReadOneRequest(void)
 {
@@ -29,7 +30,7 @@ bool TestRtuReadOneRequest(void)
    if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -67,7 +68,7 @@ bool TestRtuReadMultipleRequest(void)
    if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -101,7 +102,7 @@ bool TestRtuReadTooManyRequest(void)
    if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(!AnyErrorDetected())
+   if(!WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -134,7 +135,7 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
    if(ModbusRtuSDeviceTryProcessRequest(handle, input, output) == true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    return true;

@@ -1,7 +1,7 @@
 #include "test_udp_read.h"
-#include "../../../../Device/test_device.h"
-#include "../../../../Device/Mock/Errors/errors.h"
-#include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Mock/Errors/errors.h"
+#include "../../../../Mock/SDevice/test_device.h"
+#include "../../../../Mock/SDevice/Bindings/bindings.h"
 
 #include <memory.h>
 
@@ -23,7 +23,7 @@ bool TestUdpReadOneRequest(void)
    if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -54,7 +54,7 @@ bool TestUdpReadMultipleRequest(void)
    if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -90,7 +90,7 @@ bool TestUdpReadOneBtuRequest(void)
    if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))

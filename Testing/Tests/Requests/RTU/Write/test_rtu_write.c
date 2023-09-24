@@ -1,7 +1,7 @@
 #include "test_rtu_write.h"
-#include "../../../../Device/test_device.h"
-#include "../../../../Device/Mock/Errors/errors.h"
-#include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Mock/Errors/errors.h"
+#include "../../../../Mock/SDevice/test_device.h"
+#include "../../../../Mock/SDevice/Bindings/bindings.h"
 
 #include <memory.h>
 
@@ -36,7 +36,7 @@ bool TestRtuWriteOneRequest(void)
    if(MockWriteRegisters[0] != 0x2211)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    return true;
@@ -76,7 +76,7 @@ bool TestRtuWriteMultipleRequest(void)
    if(MockWriteRegisters[1] != 0x4433)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    return true;

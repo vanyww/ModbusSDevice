@@ -1,5 +1,5 @@
 #include "test_device.h"
-#include "Mock/Functions/mock_functions.h"
+#include "Bindings/bindings.h"
 
 #include <memory.h>
 
@@ -10,7 +10,7 @@ SDEVICE_HANDLE(ModbusRtu) * CreateModbusRtuSDevice(void)
 {
 
    SDEVICE_INIT_DATA(ModbusRtu) init = { { ReadRegistersMock, WriteRegistersMock } };
-   SDEVICE_HANDLE(ModbusRtu) * handle = SDEVICE_CREATE_HANDLE(ModbusRtu)(&init, NULL, 0, NULL);
+   SDEVICE_HANDLE(ModbusRtu) *handle = SDEVICE_CREATE_HANDLE(ModbusRtu)(&init, NULL, 0, NULL);
 
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
@@ -21,7 +21,7 @@ SDEVICE_HANDLE(ModbusRtu) * CreateModbusRtuSDevice(void)
 SDEVICE_HANDLE(ModbusTcp) * CreateModbusTcpSDevice(void)
 {
    SDEVICE_INIT_DATA(ModbusTcp) init = { { ReadRegistersMock, WriteRegistersMock } };
-   SDEVICE_HANDLE(ModbusTcp) * handle = SDEVICE_CREATE_HANDLE(ModbusTcp)(&init, NULL, 0, NULL);
+   SDEVICE_HANDLE(ModbusTcp) *handle = SDEVICE_CREATE_HANDLE(ModbusTcp)(&init, NULL, 0, NULL);
 
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
@@ -34,7 +34,7 @@ const uint8_t ModbusUdpBtuAddress[] = { 1, 2, 3, 4, 5, 6 };
 SDEVICE_HANDLE(ModbusUdp) * CreateModbusUdpSDevice(void)
 {
    SDEVICE_INIT_DATA(ModbusUdp) init = { { ReadRegistersMock, WriteRegistersMock }, ModbusUdpBtuAddress};
-   SDEVICE_HANDLE(ModbusUdp) * handle = SDEVICE_CREATE_HANDLE(ModbusUdp)(&init, NULL, 0, NULL);
+   SDEVICE_HANDLE(ModbusUdp) *handle = SDEVICE_CREATE_HANDLE(ModbusUdp)(&init, NULL, 0, NULL);
 
    memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
    memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));

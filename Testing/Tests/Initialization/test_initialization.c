@@ -1,16 +1,13 @@
 #include "test_initialization.h"
-#include "../../Device/test_device.h"
-#include "../../Device/Mock/Errors/errors.h"
+#include "../../Mock/Errors/errors.h"
+#include "../../Mock/SDevice/test_device.h"
 
 bool TestRtuHandleInitialization(void)
 {
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
          SDEVICE_HANDLE(ModbusRtu) *handle = CreateModbusRtuSDevice();
 
-   if(AnyErrorDetected() == true)
-      return false;
-
-   return true;
+   return !WAS_ANY_ERROR_THROWN();
 }
 
 bool TestTcpHandleInitialization(void)
@@ -18,8 +15,5 @@ bool TestTcpHandleInitialization(void)
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusTcp))))
          SDEVICE_HANDLE(ModbusTcp) *handle = CreateModbusTcpSDevice();
 
-   if(AnyErrorDetected() == true)
-      return false;
-
-   return true;
+   return !WAS_ANY_ERROR_THROWN();
 }

@@ -1,7 +1,7 @@
 #include "test_tcp_read.h"
-#include "../../../../Device/test_device.h"
-#include "../../../../Device/Mock/Errors/errors.h"
-#include "../../../../Device/Mock/Functions/mock_functions.h"
+#include "../../../../Mock/Errors/errors.h"
+#include "../../../../Mock/SDevice/test_device.h"
+#include "../../../../Mock/SDevice/Bindings/bindings.h"
 
 #include <memory.h>
 
@@ -31,7 +31,7 @@ bool TestTcpReadOneRequest(void)
    if(ModbusTcpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -70,7 +70,7 @@ bool TestTcpReadMultipleRequest(void)
    if(ModbusTcpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(AnyErrorDetected())
+   if(WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
@@ -106,7 +106,7 @@ bool TestTcpReadTooManyRequest(void)
    if(ModbusTcpSDeviceTryProcessRequest(handle, input, output) != true)
       return false;
 
-   if(!AnyErrorDetected())
+   if(!WAS_ANY_ERROR_THROWN())
       return false;
 
    if(replySize != sizeof(expectedReply))
