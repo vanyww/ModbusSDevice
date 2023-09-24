@@ -8,12 +8,22 @@
 #define RTU_MAX_VALID_SLAVE_ADDRESS         ((uint8_t)247)
 #define RTU_BROADCAST_REQUEST_SLAVE_ADDRESS ((uint8_t)0)
 
-#define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                          \
-{                                                                                                                      \
-   __auto_type _address = (address);                                                                                   \
-   _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                                  \
-   _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                            \
-})
+#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
+   #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
+   {                                                                                                                   \
+      __auto_type _address = (address);                                                                                \
+      _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                               \
+      _address != MODBUS_RTU_SDEVICE_PTP_ADDRESS      &&                                                               \
+      _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                         \
+   })
+#else
+   #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
+   {                                                                                                                   \
+      __auto_type _address = (address);                                                                                \
+      _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                               \
+      _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                         \
+   })
+#endif
 
 #define RTU_ADU(pdu_size)                                                                                              \
 struct __attribute__((packed))                                                                                         \
@@ -123,16 +133,20 @@ bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
    const RTU_ADU(input.RequestSize - EMPTY_RTU_ADU_SIZE) *request = input.RequestData;
    ModbusRtuSDeviceOperationContext context;
 
-   if(request->SlaveAddress != handle->Runtime->SlaveAddress)
+#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
+   if(request->SlaveAddress == handle->Runtime->SlaveAddress || request->SlaveAddress == MODBUS_RTU_SDEVICE_PTP_ADDRESS)
+#else
+   if(request->SlaveAddress == handle->Runtime->SlaveAddress)
+#endif
+   {
+      context.IsBroadcast = false;
+   }
+   else
    {
       if(request->SlaveAddress != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
          return false;
 
       context.IsBroadcast = true;
-   }
-   else
-   {
-      context.IsBroadcast = false;
    }
 
    if(request->Crc16 != ComputeCrc16(handle, request, sizeof(*request) - sizeof(request->Crc16)))
