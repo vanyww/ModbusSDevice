@@ -59,8 +59,10 @@ bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
    RequestFunctionProcessFunction function;
    switch(input.Pdu->FunctionCode)
    {
+#if MODBUS_SDEVICE_USE_FUNCTION_04_AS_FUNCTION_03_ALIAS
       case FUNCTION_CODE_READ_INPUT_REGISTERS:
          /* fall-through */
+#endif
       case FUNCTION_CODE_READ_HOLDING_REGISTERS:
          function = ProcessRequest03Function;
          break;
