@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ModbusSDevice/public_udp.h"
+#include "ModbusSDevice/Udp/public.h"
+#include "../Base/private.h"
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusUdp);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusUdp)
 {
-   SDEVICE_HANDLE(Modbus) *BaseHandle;
+   SDEVICE_RUNTIME_DATA(Modbus) BaseRuntime;
 };
 
 SDEVICE_HANDLE_DECLARATION(ModbusUdp);

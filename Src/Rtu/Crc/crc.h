@@ -1,22 +1,16 @@
 #pragma once
 
-#include "../private_static_rtu.h"
+#include "ModbusSDevice/Rtu/public.h"
 
 #include "SDeviceCore/errors.h"
 
-#if defined MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
-#include "TableCrcSDevice/public_crc16.h"
-
-#if (TABLE_CRC_SDEVICE_VERSION_MAJOR != 4) || (TABLE_CRC_SDEVICE_VERSION_MINOR < 0)
-#error Table CRC SDevice version is incorrect.
-#endif
-
+#if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
 extern SDEVICE_HANDLE(TableCrc16) *ModbusRtuSDeviceInternalCrc16Handle;
 #endif
 
 static inline void InitializeCrc16(void)
 {
-#if defined MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
+#if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
    if(ModbusRtuSDeviceInternalCrc16Handle != NULL)
       return;
 
@@ -29,9 +23,8 @@ static inline void InitializeCrc16(void)
       .IsReverse           = MODBUS_RTU_SDEVICE_CRC16_IS_REVERSE
    };
 
-   SDeviceHandleIdentifier identifier = MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER;
    ModbusRtuSDeviceInternalCrc16Handle =
-         SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, ModbusRtuStaticInternalSDeviceHandle, identifier, NULL);
+         SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, NULL, MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER, NULL);
 #endif
 }
 
@@ -40,7 +33,7 @@ static inline uint16_t ComputeCrc16(SDEVICE_HANDLE(ModbusRtu) *handle, const voi
    SDeviceDebugAssert(handle != NULL);
    SDeviceDebugAssert(data != NULL || size == 0);
 
-#if defined MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
+#if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
    SDeviceDebugAssert(ModbusRtuSDeviceInternalCrc16Handle != NULL);
 
    return TableCrc16SDeviceCompute(ModbusRtuSDeviceInternalCrc16Handle, data, size);

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "../private_udp.h"
-#include "../../Base/internal_base.h"
+#include "../private.h"
 
-#include "SDeviceCore/errors.h"
 #include "SDeviceCore/common.h"
 
 #include <memory.h>
@@ -33,34 +31,40 @@ static bool TryProcessRequestUdpBtuBlock(ThisHandle       *handle,
                                          UdpBtuBlockInput  input,
                                          UdpBtuBlockOutput output)
 {
+   SDeviceDebugAssert(handle != NULL);
+   SDeviceDebugAssert(input.BtuBlock != NULL);
+   SDeviceDebugAssert(output.BtuBlock != NULL);
+   SDeviceDebugAssert(output.BtuBlockSize != NULL);
+
    if(input.BtuBlockSize < EMPTY_UDP_BTU_BLOCK_SIZE)
    {
       SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_CORRUPTED_REQUEST);
       return false;
    }
 
-   if(memcmp(handle->Init.BtuAddress, input.BtuBlock->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE) != 0)
+   if(memcmp(handle->Init->BtuAddress, input.BtuBlock->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE) != 0)
       return false;
 
    size_t responseDataSize;
-   if(!ModbusSDeviceTryProcessRequestPdu(handle->Runtime.BaseHandle,
-                                         operationContext,
-                                         (PduInput)
-                                         {
-                                            .Pdu     = &input.BtuBlock->Pdu,
-                                            .PduSize = input.BtuBlockSize - EMPTY_UDP_BTU_BLOCK_SIZE
-                                         },
-                                         (PduOutput)
-                                         {
-                                            .Pdu     = &output.BtuBlock->Pdu,
-                                            .PduSize = &responseDataSize
-                                         }))
+   bool wasPduProcessingSuccessful =
+         ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
+                                           operationContext,
+                                           (PduInput)
+                                           {
+                                              .Pdu     = &input.BtuBlock->Pdu,
+                                              .PduSize = input.BtuBlockSize - EMPTY_UDP_BTU_BLOCK_SIZE
+                                           },
+                                           (PduOutput)
+                                           {
+                                              .Pdu     = &output.BtuBlock->Pdu,
+                                              .PduSize = &responseDataSize
+                                           });
+
+   if(wasPduProcessingSuccessful)
    {
-      return false;
+      memcpy(output.BtuBlock->BtuAddress, handle->Init->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE);
+      *output.BtuBlockSize = EMPTY_UDP_BTU_BLOCK_SIZE + responseDataSize;
    }
 
-   memcpy(output.BtuBlock->BtuAddress, handle->Init.BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE);
-   *output.BtuBlockSize = EMPTY_UDP_BTU_BLOCK_SIZE + responseDataSize;
-
-   return true;
+   return wasPduProcessingSuccessful;
 }

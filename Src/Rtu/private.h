@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ModbusSDevice/public_rtu.h"
+#include "ModbusSDevice/Rtu/public.h"
+#include "../Base/private.h"
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusRtu)
 {
-   SDEVICE_HANDLE(Modbus) *BaseHandle;
+   SDEVICE_RUNTIME_DATA(Modbus) BaseRuntime;
    SDEVICE_PROPERTY_TYPE(ModbusRtu, SlaveAddress) SlaveAddress;
 };
 

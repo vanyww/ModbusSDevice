@@ -1,29 +1,17 @@
 #pragma once
 
-#include "config.h"
+#include "log_base.h"
+#include "config_base.h"
+#include "dependencies_base.h"
 
-#define MODBUS_SDEVICE_VERSION_MAJOR 2
+#define MODBUS_SDEVICE_VERSION_MAJOR 4
 #define MODBUS_SDEVICE_VERSION_MINOR 0
 #define MODBUS_SDEVICE_VERSION_PATCH 0
-#define MODBUS_SDEVICE_VERSION ((SDeviceVersion)                                                                       \
-{                                                                                                                      \
-   .Major = MODBUS_SDEVICE_VERSION_MAJOR,                                                                              \
-   .Minor = MODBUS_SDEVICE_VERSION_MINOR,                                                                              \
-   .Patch = MODBUS_SDEVICE_VERSION_PATCH                                                                               \
-})
 
 #define MODBUS_SDEVICE_REGISTER_SIZE 2U
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(Modbus);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(Modbus);
-
-typedef enum
-{
-   MODBUS_SDEVICE_STATUS_OK,
-   MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST,
-   MODBUS_SDEVICE_STATUS_WRONG_FUNCTION_CODE,
-   MODBUS_SDEVICE_STATUS_REGISTERS_ACCESS_FAIL
-} ModbusSDeviceStatus;
 
 typedef enum
 {
@@ -64,5 +52,3 @@ SDEVICE_INIT_DATA_DECLARATION(Modbus)
                                                      const ModbusSDeviceWriteOperationParameters *parameters,
                                                      const void                                  *callContext);
 };
-
-SDEVICE_STRING_NAME_DECLARATION(Modbus);

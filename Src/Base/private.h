@@ -3,7 +3,7 @@
 #include "ModbusSDevice/public_base.h"
 #include "Functions/common.h"
 
-#include <stdbool.h>
+#include "SDeviceCore/errors.h"
 
 #define MAX_PDU_SIZE 253U
 
@@ -34,8 +34,11 @@ typedef struct
    size_t     *PduSize;
 } PduOutput;
 
-SDEVICE_CREATE_HANDLE_DECLARATION(Modbus, init, owner, identifier, context);
-SDEVICE_DISPOSE_HANDLE_DECLARATION(Modbus, handlePointer);
+SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(Modbus);
+
+SDEVICE_RUNTIME_DATA_DECLARATION(Modbus) { };
+
+SDEVICE_HANDLE_DECLARATION(Modbus);
 
 bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
                                        const void             *operationContext,

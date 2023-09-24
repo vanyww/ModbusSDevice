@@ -1,13 +1,11 @@
 #pragma once
 
-#include "../../private_base.h"
+#include "../../private.h"
 
-#include "SDeviceCore/errors.h"
-
-static ModbusSDeviceProtocolException ProcessRequest16Function(ThisHandle    *handle,
-                                                               const void    *operationContext,
-                                                               FunctionInput  input,
-                                                               FunctionOutput output)
+static ModbusSDeviceProtocolException ProcessRequest16Function(SDEVICE_HANDLE(Modbus) *handle,
+                                                               const void             *operationContext,
+                                                               FunctionInput           input,
+                                                               FunctionOutput          output)
 {
    SDeviceDebugAssert(handle != NULL);
    SDeviceDebugAssert(input.Request!= NULL);
@@ -36,25 +34,26 @@ static ModbusSDeviceProtocolException ProcessRequest16Function(ThisHandle    *ha
    }
 
    ModbusSDeviceProtocolException operationException =
-         handle->Init.WriteOperation(handle,
-                                     &(const ModbusSDeviceWriteOperationParameters)
-                                     {
-                                        .RegistersData    = registersData,
-                                        .RegistersAddress = registersAddress,
-                                        .RegistersCount   = registersCount
-                                     },
-                                     operationContext);
+         handle->Init->WriteOperation(handle,
+                                      &(const ModbusSDeviceWriteOperationParameters)
+                                      {
+                                         .RegistersData    = registersData,
+                                         .RegistersAddress = registersAddress,
+                                         .RegistersCount   = registersCount
+                                      },
+                                      operationContext);
 
-   if(operationException != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
+   if(operationException == MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
+   {
+      response->RegistersAddress = __builtin_bswap16(registersAddress);
+      response->RegistersCount = __builtin_bswap16(registersCount);
+
+      *output.ResponseSize = sizeof(Function16Response);
+   }
+   else
    {
       SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_REGISTERS_ACCESS_FAIL);
-      return operationException;
    }
 
-   response->RegistersAddress = __builtin_bswap16(registersAddress);
-   response->RegistersCount = __builtin_bswap16(registersCount);
-
-   *output.ResponseSize = sizeof(Function16Response);
-
-   return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
+   return operationException;
 }

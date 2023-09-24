@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ModbusSDevice/public_tcp.h"
+#include "ModbusSDevice/Tcp/public.h"
+#include "../Base/private.h"
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusTcp)
 {
-   SDEVICE_HANDLE(Modbus) *BaseHandle;
+   SDEVICE_RUNTIME_DATA(Modbus) BaseRuntime;
    struct
    {
       uint16_t TransactionId;

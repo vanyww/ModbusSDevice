@@ -1,9 +1,7 @@
-#include "private_base.h"
+#include "private.h"
 #include "Functions/03Function/03_function.h"
 #include "Functions/16Function/16_function.h"
 
-#include "SDeviceCore/heap.h"
-#include "SDeviceCore/errors.h"
 #include "SDeviceCore/common.h"
 
 #define EMPTY_PDU_SIZE (sizeof(MessagePdu) - SIZEOF_MEMBER(MessagePdu, Data))
@@ -17,50 +15,12 @@ typedef enum
    FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG   = 0x80
 } FunctionCode;
 
-typedef ModbusSDeviceProtocolException (* RequestFunctionProcessFunction)(ThisHandle    *handle,
-                                                                          const void    *operationContext,
-                                                                          FunctionInput  input,
-                                                                          FunctionOutput output);
+typedef ModbusSDeviceProtocolException (* RequestFunctionProcessFunction)(SDEVICE_HANDLE(Modbus) *handle,
+                                                                          const void             *operationContext,
+                                                                          FunctionInput           input,
+                                                                          FunctionOutput          output);
 
-SDEVICE_STRING_NAME_DEFINITION(Modbus);
-
-SDEVICE_CREATE_HANDLE_DECLARATION(Modbus, init, owner, identifier, context)
-{
-   SDeviceAssert(init != NULL);
-
-   const ThisInitData *_init = init;
-
-   SDeviceAssert(_init->ReadOperation != NULL);
-   SDeviceAssert(_init->WriteOperation != NULL);
-
-   ThisHandle *handle = SDeviceMalloc(sizeof(ThisHandle));
-   handle->Header = (SDeviceHandleHeader)
-   {
-      .Context           = context,
-      .OwnerHandle       = owner,
-      .SDeviceStringName = SDEVICE_STRING_NAME(Modbus),
-      .LatestStatus      = MODBUS_SDEVICE_STATUS_OK,
-      .Identifier        = identifier
-   };
-   handle->Init = *_init;
-
-   return handle;
-}
-
-SDEVICE_DISPOSE_HANDLE_DECLARATION(Modbus, handlePointer)
-{
-   SDeviceAssert(handlePointer != NULL);
-
-   ThisHandle **_handlePointer = handlePointer;
-   ThisHandle *handle = *_handlePointer;
-
-   SDeviceAssert(handle != NULL);
-
-   SDeviceFree(handle);
-   *_handlePointer = NULL;
-}
-
-static void EncodeExceptionResponsePdu(ThisHandle                    *handle,
+static void EncodeExceptionResponsePdu(SDEVICE_HANDLE(Modbus)        *handle,
                                        ModbusSDeviceProtocolException exception,
                                        FunctionCode                   functionCode,
                                        PduOutput                      output)
@@ -80,10 +40,10 @@ static void EncodeExceptionResponsePdu(ThisHandle                    *handle,
    *output.PduSize = EMPTY_PDU_SIZE + SIZEOF_MEMBER(MessagePdu, Data.AsExceptionResponse);
 }
 
-bool ModbusSDeviceTryProcessRequestPdu(ThisHandle *handle,
-                                       const void *operationContext,
-                                       PduInput    input,
-                                       PduOutput   output)
+bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
+                                       const void             *operationContext,
+                                       PduInput                input,
+                                       PduOutput               output)
 {
    SDeviceDebugAssert(handle != NULL);
    SDeviceDebugAssert(input.Pdu != NULL);
