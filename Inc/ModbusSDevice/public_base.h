@@ -1,8 +1,8 @@
 #pragma once
 
-#include "log_base.h"
-#include "config_base.h"
 #include "dependencies_base.h"
+#include "config_base.h"
+#include "log_base.h"
 
 #define MODBUS_SDEVICE_VERSION_MAJOR 4
 #define MODBUS_SDEVICE_VERSION_MINOR 0
@@ -31,9 +31,9 @@ typedef enum
 
 typedef struct
 {
-   void       *RegistersData;
-   uint16_t    RegistersCount;
-   uint16_t    RegistersAddress;
+   void    *RegistersData;
+   uint16_t RegistersCount;
+   uint16_t RegistersAddress;
 } ModbusSDeviceReadOperationParameters;
 
 typedef struct

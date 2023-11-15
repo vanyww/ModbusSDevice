@@ -2,8 +2,6 @@
 
 #include "ModbusSDevice/Rtu/public.h"
 
-#include "SDeviceCore/errors.h"
-
 #if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
 extern SDEVICE_HANDLE(TableCrc16) *ModbusRtuSDeviceInternalCrc16Handle;
 #endif
@@ -30,12 +28,7 @@ static inline void InitializeCrc16(void)
 
 static inline uint16_t ComputeCrc16(SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t size)
 {
-   SDeviceDebugAssert(handle != NULL);
-   SDeviceDebugAssert(data != NULL || size == 0);
-
 #if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
-   SDeviceDebugAssert(ModbusRtuSDeviceInternalCrc16Handle != NULL);
-
    return TableCrc16SDeviceCompute(ModbusRtuSDeviceInternalCrc16Handle, data, size);
 #else
    return handle->Init.ComputeCrc16(handle, data, size);

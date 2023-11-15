@@ -27,6 +27,7 @@ typedef struct __attribute__((packed, __may_alias__))
 } UdpAdu;
 
 SDEVICE_IDENTITY_BLOCK_DEFINITION(ModbusUdp,
+                                  NULL,
                                   ((const SDeviceUuid)
                                   {
                                      .High = MODBUS_UDP_SDEVICE_UUID_HIGH,
@@ -69,6 +70,8 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceFreeHandle(handle);
    *_handlePointer = NULL;
 }
@@ -77,7 +80,8 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
                                        ModbusUdpSDeviceInput  input,
                                        ModbusUdpSDeviceOutput output)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(input.RequestData != NULL);
    SDeviceAssert(output.ResponseData != NULL);
    SDeviceAssert(output.ResponseSize != NULL);
@@ -89,12 +93,12 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
       __builtin_bswap16(request->MbapHeader.PacketSize) !=
             input.RequestSize - (EMPTY_UDP_ADU_SIZE - SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress)))
    {
-      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
    size_t responseDataSize;
-   bool wasInnerProcessingSuccessful;
+   bool wasProcessingSuccessful;
    uint16_t protocolId = request->MbapHeader.ProtocolId;
    ModbusUdpSDeviceOperationContext context = { .SlaveAddress = request->MbapHeader.SlaveAddress };
 
@@ -102,7 +106,7 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
    {
       case __builtin_bswap16(MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID):
          context.IsBroadcast = input.IsBroadcast;
-         wasInnerProcessingSuccessful =
+         wasProcessingSuccessful =
                ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
                                                  &context,
                                                  (PduInput)
@@ -119,7 +123,7 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
 
       case __builtin_bswap16(MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID):
          context.IsBroadcast = false;
-         wasInnerProcessingSuccessful =
+         wasProcessingSuccessful =
                TryProcessRequestUdpBtuBlock(handle,
                                             &context,
                                             (UdpBtuBlockInput)
@@ -139,7 +143,7 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
          return false;
    }
 
-   if(wasInnerProcessingSuccessful)
+   if(wasProcessingSuccessful)
    {
       response->MbapHeader = (UdpMbapHeader)
       {
@@ -152,5 +156,5 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
       *output.ResponseSize = EMPTY_UDP_ADU_SIZE + responseDataSize;
    }
 
-   return wasInnerProcessingSuccessful;
+   return wasProcessingSuccessful;
 }

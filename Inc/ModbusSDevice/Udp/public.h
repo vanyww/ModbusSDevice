@@ -30,7 +30,7 @@ SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusUdp);
 SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 {
    SDEVICE_INIT_DATA_DECLARATION(Modbus) BaseInit;
-   const uint8_t *BtuAddress;
+   const uint8_t                        *BtuAddress;
 };
 
 SDEVICE_IDENTITY_BLOCK_DECLARATION(ModbusUdp);

@@ -9,14 +9,9 @@ static ModbusSDeviceProtocolException ProcessRequest03Function(SDEVICE_HANDLE(Mo
                                                                FunctionInput           input,
                                                                FunctionOutput          output)
 {
-   SDeviceDebugAssert(handle != NULL);
-   SDeviceDebugAssert(input.Request != NULL);
-   SDeviceDebugAssert(output.Response != NULL);
-   SDeviceDebugAssert(output.ResponseSize != NULL);
-
    if(input.RequestSize != sizeof(Function03Request))
    {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
    }
 
@@ -27,7 +22,7 @@ static ModbusSDeviceProtocolException ProcessRequest03Function(SDEVICE_HANDLE(Mo
 
    if(registersCount > FUNCTION_03_MAX_REGISTERS_COUNT)
    {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REGISTERS_COUNT);
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
    }
 

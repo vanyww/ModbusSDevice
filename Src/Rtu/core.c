@@ -10,32 +10,33 @@
 
 #if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
    #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
-   {                                                                                                                   \
-      __auto_type _address = (address);                                                                                \
-      _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                               \
-      _address != MODBUS_RTU_SDEVICE_PTP_ADDRESS      &&                                                               \
-      _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                         \
-   })
+      {                                                                                                                \
+         __auto_type _address = (address);                                                                             \
+         _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                            \
+         _address != MODBUS_RTU_SDEVICE_PTP_ADDRESS      &&                                                            \
+         _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                      \
+      })
 #else
    #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
-   {                                                                                                                   \
-      __auto_type _address = (address);                                                                                \
-      _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                               \
-      _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                         \
-   })
+      {                                                                                                                \
+         __auto_type _address = (address);                                                                             \
+         _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                            \
+         _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                      \
+      })
 #endif
 
 #define RTU_ADU(pdu_size)                                                                                              \
-struct __attribute__((packed))                                                                                         \
-{                                                                                                                      \
-   uint8_t  SlaveAddress;                                                                                              \
-   uint8_t  PduBytes[(pdu_size)];                                                                                      \
-   uint16_t Crc16;                                                                                                     \
-}
+   struct __attribute__((packed))                                                                                      \
+   {                                                                                                                   \
+      uint8_t  SlaveAddress;                                                                                           \
+      uint8_t  PduBytes[(pdu_size)];                                                                                   \
+      uint16_t Crc16;                                                                                                  \
+   }
 #define EMPTY_RTU_ADU_SIZE sizeof(RTU_ADU(0))
 
 
 SDEVICE_IDENTITY_BLOCK_DEFINITION(ModbusRtu,
+                                  NULL,
                                   ((const SDeviceUuid)
                                   {
                                      .High = MODBUS_RTU_SDEVICE_UUID_HIGH,
@@ -80,13 +81,16 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceFreeHandle(handle);
    *_handlePointer = NULL;
 }
 
 SDEVICE_GET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(value != NULL);
 
    ThisHandle *_handle = handle;
@@ -97,12 +101,13 @@ SDEVICE_GET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 
 SDEVICE_SET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(value != NULL);
 
    ThisHandle *_handle = handle;
-   typeof(_handle->Runtime->SlaveAddress) address;
-   memcpy(&address, value, sizeof(_handle->Runtime->SlaveAddress));
+   SDEVICE_PROPERTY_TYPE(ModbusRtu, SlaveAddress) address;
+   memcpy(&address, value, sizeof(address));
 
    if(!RTU_IS_VALID_SLAVE_ADDRESS(address))
    {
@@ -119,14 +124,15 @@ bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
                                        ModbusRtuSDeviceInput      input,
                                        ModbusRtuSDeviceOutput     output)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(input.RequestData != NULL);
    SDeviceAssert(output.ResponseData != NULL);
    SDeviceAssert(output.ResponseSize != NULL);
 
    if(input.RequestSize < EMPTY_RTU_ADU_SIZE)
    {
-      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
@@ -151,7 +157,7 @@ bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
 
    if(request->Crc16 != ComputeCrc16(handle, request, sizeof(*request) - sizeof(request->Crc16)))
    {
-      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_WRONG_REQUEST_CRC);
       return false;
    }
 

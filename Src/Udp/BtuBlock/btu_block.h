@@ -31,14 +31,9 @@ static bool TryProcessRequestUdpBtuBlock(ThisHandle       *handle,
                                          UdpBtuBlockInput  input,
                                          UdpBtuBlockOutput output)
 {
-   SDeviceDebugAssert(handle != NULL);
-   SDeviceDebugAssert(input.BtuBlock != NULL);
-   SDeviceDebugAssert(output.BtuBlock != NULL);
-   SDeviceDebugAssert(output.BtuBlockSize != NULL);
-
    if(input.BtuBlockSize < EMPTY_UDP_BTU_BLOCK_SIZE)
    {
-      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 

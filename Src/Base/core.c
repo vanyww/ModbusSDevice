@@ -25,10 +25,6 @@ static void EncodeExceptionResponsePdu(SDEVICE_HANDLE(Modbus)        *handle,
                                        FunctionCode                   functionCode,
                                        PduOutput                      output)
 {
-   SDeviceDebugAssert(handle != NULL);
-   SDeviceDebugAssert(output.Pdu != NULL);
-   SDeviceDebugAssert(output.PduSize != NULL);
-
    *output.Pdu = (MessagePdu)
    {
       .FunctionCode = functionCode | FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG,
@@ -45,14 +41,9 @@ bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
                                        PduInput                input,
                                        PduOutput               output)
 {
-   SDeviceDebugAssert(handle != NULL);
-   SDeviceDebugAssert(input.Pdu != NULL);
-   SDeviceDebugAssert(output.Pdu != NULL);
-   SDeviceDebugAssert(output.PduSize != NULL);
-
    if(input.PduSize < EMPTY_PDU_SIZE || input.PduSize > MAX_PDU_SIZE)
    {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
@@ -101,13 +92,13 @@ bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
          return false;
 
       EncodeExceptionResponsePdu(handle, exception, input.Pdu->FunctionCode, output);
-
-      return true;
    }
+   else
+   {
+      output.Pdu->FunctionCode = input.Pdu->FunctionCode;
 
-   output.Pdu->FunctionCode = input.Pdu->FunctionCode;
-
-   *output.PduSize = EMPTY_PDU_SIZE + functionResponseSize;
+      *output.PduSize = EMPTY_PDU_SIZE + functionResponseSize;
+   }
 
    return true;
 }

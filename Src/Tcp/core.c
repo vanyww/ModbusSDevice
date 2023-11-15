@@ -23,6 +23,7 @@ typedef struct __attribute__((packed, __may_alias__))
 } TcpAdu;
 
 SDEVICE_IDENTITY_BLOCK_DEFINITION(ModbusTcp,
+                                  NULL,
                                   ((const SDeviceUuid)
                                   {
                                      .High = MODBUS_TCP_SDEVICE_UUID_HIGH,
@@ -65,6 +66,8 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceFreeHandle(handle);
    *_handlePointer = NULL;
 }
@@ -73,7 +76,8 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(ThisHandle *handle,
                                           const void *mbapHeaderData,
                                           size_t     *requestSizeToReceive)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(mbapHeaderData != NULL);
    SDeviceAssert(requestSizeToReceive != NULL);
 
@@ -98,7 +102,8 @@ bool ModbusTcpSDeviceTryProcessRequest(ThisHandle            *handle,
                                        ModbusTcpSDeviceInput  input,
                                        ModbusTcpSDeviceOutput output)
 {
-   SDeviceAssert(handle != NULL);
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
    SDeviceAssert(input.RequestData != NULL);
    SDeviceAssert(output.ResponseData != NULL);
    SDeviceAssert(output.ResponseSize != NULL);
@@ -107,7 +112,7 @@ bool ModbusTcpSDeviceTryProcessRequest(ThisHandle            *handle,
    if(!TRY_ADD_INT_CHECKED(input.RequestSize, SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress), &expectedPacketSize) ||
       expectedPacketSize != handle->Runtime->MbapHeaderData.PacketSize)
    {
-      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_CORRUPTED_REQUEST);
+      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
