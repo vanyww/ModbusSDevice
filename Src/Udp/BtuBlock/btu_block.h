@@ -37,7 +37,7 @@ static bool TryProcessRequestUdpBtuBlock(ThisHandle       *handle,
       return false;
    }
 
-   if(memcmp(handle->Init->BtuAddress, input.BtuBlock->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE) != 0)
+   if(memcmp(handle->Runtime->BtuAddress, input.BtuBlock->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE) != 0)
       return false;
 
    size_t responseDataSize;
@@ -57,7 +57,7 @@ static bool TryProcessRequestUdpBtuBlock(ThisHandle       *handle,
 
    if(wasPduProcessingSuccessful)
    {
-      memcpy(output.BtuBlock->BtuAddress, handle->Init->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE);
+      memcpy(output.BtuBlock->BtuAddress, handle->Runtime->BtuAddress, MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE);
       *output.BtuBlockSize = EMPTY_UDP_BTU_BLOCK_SIZE + responseDataSize;
    }
 

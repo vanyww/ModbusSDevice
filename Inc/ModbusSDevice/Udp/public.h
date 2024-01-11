@@ -30,13 +30,16 @@ SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusUdp);
 SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 {
    SDEVICE_INIT_DATA_DECLARATION(Modbus) BaseInit;
-   const uint8_t                        *BtuAddress;
 };
 
 SDEVICE_IDENTITY_BLOCK_DECLARATION(ModbusUdp);
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context);
 SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer);
+
+SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusUdp, BtuAddress, uint8_t)[MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE];
+SDEVICE_GET_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value);
+SDEVICE_SET_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value);
 
 typedef struct
 {

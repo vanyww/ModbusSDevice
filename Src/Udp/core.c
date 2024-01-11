@@ -76,6 +76,30 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer)
    *_handlePointer = NULL;
 }
 
+SDEVICE_GET_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
+{
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
+   SDeviceAssert(value != NULL);
+
+   ThisHandle *_handle = handle;
+   memcpy(value, &_handle->Runtime->BtuAddress, sizeof(_handle->Runtime->BtuAddress));
+
+   return SDEVICE_PROPERTY_STATUS_OK;
+}
+
+SDEVICE_SET_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
+{
+   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+
+   SDeviceAssert(value != NULL);
+
+   ThisHandle *_handle = handle;
+   memcpy(_handle->Runtime->BtuAddress, value, sizeof(SDEVICE_PROPERTY_TYPE(ModbusUdp, BtuAddress)));
+
+   return SDEVICE_PROPERTY_STATUS_OK;
+}
+
 bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
                                        ModbusUdpSDeviceInput  input,
                                        ModbusUdpSDeviceOutput output)
