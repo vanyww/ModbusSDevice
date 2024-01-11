@@ -7,9 +7,9 @@
 extern uint16_t MockReadRegisters[MOCK_REGISTERS_COUNT];
 extern uint16_t MockWriteRegisters[MOCK_REGISTERS_COUNT];
 
-ModbusSDeviceProtocolException ReadRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
-                                                 const ModbusSDeviceReadOperationParameters *parameters,
-                                                 const void *callContext);
-ModbusSDeviceProtocolException WriteRegistersMock(SDEVICE_HANDLE(Modbus) *handle,
-                                                  const ModbusSDeviceWriteOperationParameters *parameters,
-                                                  const void *callContext);
+ModbusSDeviceBaseProtocolException ReadRegistersMock(void                                           *handle,
+                                                     const ModbusSDeviceBaseReadOperationParameters *parameters,
+                                                     const void                                     *callContext);
+ModbusSDeviceBaseProtocolException WriteRegistersMock(void                                            *handle,
+                                                      const ModbusSDeviceBaseWriteOperationParameters *parameters,
+                                                      const void                                      *callContext);
