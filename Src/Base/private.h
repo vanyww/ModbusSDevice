@@ -10,6 +10,7 @@
 typedef struct __attribute__((packed, __may_alias__))
 {
    uint8_t FunctionCode;
+
    union __attribute__((__may_alias__))
    {
       FunctionRequest  AsFunctionRequest;
@@ -34,13 +35,4 @@ typedef struct
    size_t     *PduSize;
 } PduOutput;
 
-SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(Modbus);
-
-SDEVICE_RUNTIME_DATA_DECLARATION(Modbus) { };
-
-SDEVICE_HANDLE_DECLARATION(Modbus);
-
-bool ModbusSDeviceTryProcessRequestPdu(SDEVICE_HANDLE(Modbus) *handle,
-                                       const void             *operationContext,
-                                       PduInput                input,
-                                       PduOutput               output);
+bool ModbusSDeviceBaseTryProcessRequestPdu(void *handle,

@@ -42,8 +42,8 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, owner, identifier, context)
 
    const ThisInitData *_init = init;
 
-   SDeviceAssert(_init->BaseInit.ReadOperation != NULL);
-   SDeviceAssert(_init->BaseInit.WriteOperation != NULL);
+   SDeviceAssert(_init->Base.ReadOperation != NULL);
+   SDeviceAssert(_init->Base.WriteOperation != NULL);
 
    ThisHandle *handle = SDeviceAllocHandle(sizeof(ThisInitData), sizeof(ThisRuntimeData));
    handle->Header = (SDeviceHandleHeader)
@@ -121,18 +121,7 @@ bool ModbusTcpSDeviceTryProcessRequest(ThisHandle            *handle,
 
    size_t pduResponseSize;
    bool wasPduProcessingSuccessful =
-         ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
-                                           &context,
-                                           (PduInput)
-                                           {
-                                              .Pdu     = (const MessagePdu *)input.RequestData,
-                                              .PduSize = input.RequestSize
-                                           },
-                                           (PduOutput)
-                                           {
-                                              .Pdu     = &response->Pdu,
-                                              .PduSize = &pduResponseSize
-                                           });
+         ModbusSDeviceBaseTryProcessRequestPdu(handle,
 
    if(wasPduProcessingSuccessful)
    {

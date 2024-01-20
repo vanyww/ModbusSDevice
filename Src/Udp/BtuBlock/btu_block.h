@@ -42,18 +42,7 @@ static bool TryProcessRequestUdpBtuBlock(ThisHandle       *handle,
 
    size_t responseDataSize;
    bool wasPduProcessingSuccessful =
-         ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
-                                           operationContext,
-                                           (PduInput)
-                                           {
-                                              .Pdu     = &input.BtuBlock->Pdu,
-                                              .PduSize = input.BtuBlockSize - EMPTY_UDP_BTU_BLOCK_SIZE
-                                           },
-                                           (PduOutput)
-                                           {
-                                              .Pdu     = &output.BtuBlock->Pdu,
-                                              .PduSize = &responseDataSize
-                                           });
+         ModbusSDeviceBaseTryProcessRequestPdu(handle,
 
    if(wasPduProcessingSuccessful)
    {

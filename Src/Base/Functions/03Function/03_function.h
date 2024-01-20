@@ -2,17 +2,18 @@
 
 #include "../../private.h"
 
-#define FUNCTION_03_MAX_REGISTERS_COUNT ((MAX_PDU_SIZE - sizeof(Function03Response)) / MODBUS_SDEVICE_REGISTER_SIZE)
+#define FUNCTION_03_MAX_REGISTERS_COUNT ((MAX_PDU_SIZE - sizeof(Function03Response)) /                                 \
+                                         MODBUS_SDEVICE_BASE_REGISTER_SIZE)
 
-static ModbusSDeviceProtocolException ProcessRequest03Function(SDEVICE_HANDLE(Modbus) *handle,
-                                                               const void             *operationContext,
-                                                               FunctionInput           input,
-                                                               FunctionOutput          output)
+static ModbusSDeviceBaseProtocolException ProcessRequest03Function(void          *handle,
+                                                                   const void    *operationContext,
+                                                                   FunctionInput  input,
+                                                                   FunctionOutput output)
 {
    if(input.RequestSize != sizeof(Function03Request))
    {
       SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
-      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
+      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
    }
 
    Function03Response *response = &output.Response->AsFunction03Response;
@@ -23,22 +24,23 @@ static ModbusSDeviceProtocolException ProcessRequest03Function(SDEVICE_HANDLE(Mo
    if(registersCount > FUNCTION_03_MAX_REGISTERS_COUNT)
    {
       SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REGISTERS_COUNT);
-      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
+      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
    }
 
-   ModbusSDeviceProtocolException operationException =
-         handle->Init->ReadOperation(handle,
-                                     &(const ModbusSDeviceReadOperationParameters)
-                                     {
-                                        .RegistersData    = response->RegistersData,
-                                        .RegistersAddress = registersAddress,
-                                        .RegistersCount   = registersCount
-                                     },
-                                     operationContext);
+   const ModbusSDeviceBaseInitData *init = SDeviceGetHandleInitData(handle);
+   ModbusSDeviceBaseProtocolException operationException =
+         init->ReadOperation(handle,
+                             &(const ModbusSDeviceBaseReadOperationParameters)
+                             {
+                                .RegistersData    = response->RegistersData,
+                                .RegistersAddress = registersAddress,
+                                .RegistersCount   = registersCount
+                             },
+                             operationContext);
 
-   if(operationException == MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
+   if(operationException == MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
    {
-      size_t readRegistersSize = registersCount * MODBUS_SDEVICE_REGISTER_SIZE;
+      size_t readRegistersSize = registersCount * MODBUS_SDEVICE_BASE_REGISTER_SIZE;
       response->FollowingDataBytes = readRegistersSize;
 
       *output.ResponseSize = readRegistersSize + sizeof(Function03Response);

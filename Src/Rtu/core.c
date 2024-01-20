@@ -55,8 +55,8 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, owner, identifier, context)
 
    const ThisInitData *_init = init;
 
-   SDeviceAssert(_init->BaseInit.ReadOperation != NULL);
-   SDeviceAssert(_init->BaseInit.WriteOperation != NULL);
+   SDeviceAssert(_init->Base.ReadOperation != NULL);
+   SDeviceAssert(_init->Base.WriteOperation != NULL);
 
    ThisHandle *handle = SDeviceAllocHandle(sizeof(ThisInitData), sizeof(ThisRuntimeData));
    handle->Header = (SDeviceHandleHeader)
@@ -163,18 +163,7 @@ bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
 
    size_t pduResponseSize;
    bool wasPduProcessingSuccessful =
-         ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
-                                           &context,
-                                           (PduInput)
-                                           {
-                                              .Pdu     = (const MessagePdu *)request->PduBytes,
-                                              .PduSize = input.RequestSize - EMPTY_RTU_ADU_SIZE
-                                           },
-                                           (PduOutput)
-                                           {
-                                              .Pdu     = (MessagePdu *)((RTU_ADU(0) *)output.ResponseData)->PduBytes,
-                                              .PduSize = &pduResponseSize
-                                           });
+         ModbusSDeviceBaseTryProcessRequestPdu(handle,
 
    if(wasPduProcessingSuccessful)
    {

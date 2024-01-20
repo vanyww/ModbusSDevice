@@ -46,8 +46,8 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context)
 
    const ThisInitData *_init = init;
 
-   SDeviceAssert(_init->BaseInit.ReadOperation != NULL);
-   SDeviceAssert(_init->BaseInit.WriteOperation != NULL);
+   SDeviceAssert(_init->Base.ReadOperation != NULL);
+   SDeviceAssert(_init->Base.WriteOperation != NULL);
 
    ThisHandle *handle = SDeviceAllocHandle(sizeof(ThisInitData), sizeof(ThisRuntimeData));
    handle->Header = (SDeviceHandleHeader)
@@ -131,18 +131,7 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
       case __builtin_bswap16(MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID):
          context.IsBroadcast = input.IsBroadcast;
          wasProcessingSuccessful =
-               ModbusSDeviceTryProcessRequestPdu((SDEVICE_HANDLE(Modbus) *)handle,
-                                                 &context,
-                                                 (PduInput)
-                                                 {
-                                                    .Pdu     = &request->Data.AsPdu,
-                                                    .PduSize = input.RequestSize - EMPTY_UDP_ADU_SIZE
-                                                 },
-                                                 (PduOutput)
-                                                 {
-                                                    .Pdu     = &response->Data.AsPdu,
-                                                    .PduSize = &responseDataSize
-                                                 });
+               ModbusSDeviceBaseTryProcessRequestPdu(handle,
          break;
 
       case __builtin_bswap16(MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID):

@@ -16,7 +16,6 @@ SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusTcp)
 {
-   SDEVICE_RUNTIME_DATA(Modbus) BaseRuntime;
    struct
    {
       uint16_t TransactionId;
