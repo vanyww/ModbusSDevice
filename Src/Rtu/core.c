@@ -193,7 +193,7 @@ bool ModbusRtuSDeviceTryProcessRequest(ThisHandle *handle,
       {
          RTU_ADU(pduResponseSize) *response = output.ResponseData;
 
-         response->SlaveAddress = handle->Runtime->SlaveAddress;
+         response->SlaveAddress = (isBroadcastRequest) ? handle->Runtime->SlaveAddress : slaveAddress;
          response->Crc16 = ComputeCrc16(handle, response, sizeof(*response) - sizeof(response->Crc16));
 
          *output.ResponseSize = sizeof(*response);
