@@ -1,38 +1,69 @@
 #pragma once
 
 #include "ModbusSDevice/public_base.h"
-#include "Functions/common.h"
 
 #include "SDeviceCore/errors.h"
 
 #define MAX_PDU_SIZE 253U
+#define SWAP_UINT16_BYTES(value) __builtin_bswap16(value)
 
-typedef struct __attribute__((packed, __may_alias__))
-{
-   uint8_t FunctionCode;
+#define BI_ENDIAN_UINT16_FROM_NETWORK(value) (                                                                         \
+   {                                                                                                                   \
+      __auto_type _value = (value);                                                                                    \
+      (BiEndianUInt16)                                                                                                 \
+      {                                                                                                                \
+         .AsNetwork = (_value),                                                                                        \
+         .AsNative  = SWAP_UINT16_BYTES(_value)                                                                        \
+      };                                                                                                               \
+   })
 
-   union __attribute__((__may_alias__))
-   {
-      FunctionRequest  AsFunctionRequest;
-      FunctionResponse AsFunctionResponse;
-
-      struct __attribute__((packed, __may_alias__))
-      {
-         uint8_t ExceptionCode;
-      } AsExceptionResponse;
-   } Data;
-} MessagePdu;
+#define BI_ENDIAN_UINT16_FROM_NATIVE(value) (                                                                          \
+   {                                                                                                                   \
+      __auto_type _value = (value);                                                                                    \
+      (BiEndianUInt16)                                                                                                 \
+      {                                                                                                                \
+         .AsNetwork = SWAP_UINT16_BYTES(_value),                                                                       \
+         .AsNative  = (_value)                                                                                         \
+      };                                                                                                               \
+   })
 
 typedef struct
 {
-   const MessagePdu *Pdu;
-   size_t            PduSize;
-} PduInput;
+   uint16_t AsNative;
+   uint16_t AsNetwork;
+} BiEndianUInt16;
 
 typedef struct
 {
-   MessagePdu *Pdu;
-   size_t     *PduSize;
-} PduOutput;
+   const void *RequestData;
+   const void *OperationContext;
+   size_t      RequestSize;
+   bool        IsOutputMandatory;
+} ProcessingStageInput;
 
-bool ModbusSDeviceBaseTryProcessRequestPdu(void *handle,
+typedef struct
+{
+   void   *ResponseData;
+   size_t *ResponseSize;
+} ProcessingStageOutput;
+
+typedef struct
+{
+   bool SupportsBroadcasts;
+} BaseRuntimeData;
+
+typedef ModbusSDeviceBaseInitData BaseInitData;
+typedef ModbusSDeviceBaseBroadcastContext BaseBroadcastContext;
+typedef ModbusSDeviceBaseProtocolException BaseProtocolException;
+typedef ModbusSDeviceBaseReadOperationParameters BaseReadOperationParameters;
+typedef ModbusSDeviceBaseWriteOperationParameters BaseWriteOperationParameters;
+
+__attribute__((always_inline))
+static inline bool HandleSupportsBroadcasts(void *handle)
+{
+   return ((BaseRuntimeData *)SDeviceGetHandleRuntimeData(handle))->SupportsBroadcasts;
+}
+
+bool ModbusSDeviceBaseTryProcessRequestPdu(void                 *handle,
+                                           ProcessingStageInput  input,
+                                           ProcessingStageOutput output);

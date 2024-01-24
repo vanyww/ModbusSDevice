@@ -1,10 +1,14 @@
-#include "private.h"
-#include "Functions/03Function/03_function.h"
-#include "Functions/16Function/16_function.h"
+#include "Functions/exception.h"
+#include "Functions/03_function.h"
+#include "Functions/16_function.h"
 
-#include "SDeviceCore/common.h"
+#define EMPTY_PDU_SIZE sizeof(MessagePdu)
 
-#define EMPTY_PDU_SIZE (sizeof(MessagePdu) - SIZEOF_MEMBER(MessagePdu, Data))
+typedef struct __attribute__((packed, may_alias))
+{
+   uint8_t FunctionCode;
+   uint8_t FunctionData[];
+} MessagePdu;
 
 typedef enum
 {
@@ -15,84 +19,100 @@ typedef enum
    FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG   = 0x80
 } FunctionCode;
 
-typedef ModbusSDeviceBaseProtocolException (* RequestFunctionProcessFunction)(void          *handle,
-                                                                              const void    *operationContext,
-                                                                              FunctionInput  input,
-                                                                              FunctionOutput output);
+typedef BaseProtocolException (* RequestFunctionProcessFunction)(void                 *handle,
+                                                                 ProcessingStageInput  input,
+                                                                 ProcessingStageOutput output);
 
-static void EncodeExceptionResponsePdu(ModbusSDeviceBaseProtocolException exception,
-                                       FunctionCode                       functionCode,
-                                       PduOutput                          output)
+static void EncodeExceptionResponsePdu(BaseProtocolException exception,
+                                       FunctionCode          functionCode,
+                                       ProcessingStageOutput output)
 {
-   *output.Pdu = (MessagePdu)
-   {
-      .FunctionCode = functionCode | FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG,
-      .Data.AsExceptionResponse =
-      {
-         .ExceptionCode = exception
-      }
-   };
-   *output.PduSize = EMPTY_PDU_SIZE + SIZEOF_MEMBER(MessagePdu, Data.AsExceptionResponse);
+   MessagePdu *response = output.ResponseData;
+
+   size_t functionResponseSize;
+   ProcessExceptionFunction(exception,
+                            (ProcessingStageOutput)
+                            {
+                               .ResponseData = response->FunctionData,
+                               .ResponseSize = &functionResponseSize
+                            });
+
+   response->FunctionCode = functionCode | FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG;
+
+   *output.ResponseSize = EMPTY_PDU_SIZE + functionResponseSize;
 }
 
-bool ModbusSDeviceBaseTryProcessRequestPdu(void       *handle,
+bool ModbusSDeviceBaseTryProcessRequestPdu(void                 *handle,
+                                           ProcessingStageInput  input,
+                                           ProcessingStageOutput output)
 {
-   if(input.PduSize < EMPTY_PDU_SIZE || input.PduSize > MAX_PDU_SIZE)
+   if(input.RequestSize < EMPTY_PDU_SIZE || input.RequestSize > MAX_PDU_SIZE)
    {
       SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
-   RequestFunctionProcessFunction function;
-   switch(input.Pdu->FunctionCode)
+   const MessagePdu *request = input.RequestData;
+   MessagePdu *response = output.ResponseData;
+
+   uint8_t functionCode = request->FunctionCode;
+
+   RequestFunctionProcessFunction functionProcessor;
+   switch(functionCode)
    {
 #if MODBUS_SDEVICE_USE_FUNCTION_04_AS_FUNCTION_03_ALIAS
       case FUNCTION_CODE_READ_INPUT_REGISTERS:
          /* fall-through */
 #endif
       case FUNCTION_CODE_READ_HOLDING_REGISTERS:
-         function = ProcessRequest03Function;
+         functionProcessor = Process03FunctionRequest;
          break;
 
       case FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS:
-         function = ProcessRequest16Function;
+         functionProcessor = Process16FunctionRequest;
          break;
 
       default:
-         SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_FUNCTION_CODE);
-         EncodeExceptionResponsePdu(MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION,
-                                    input.Pdu->FunctionCode,
-                                    output);
+         if(!HandleSupportsBroadcasts(handle) || !((const BaseBroadcastContext *)input.OperationContext)->IsBroadcast)
+            SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_FUNCTION_CODE);
+
+         if(input.IsOutputMandatory)
+            EncodeExceptionResponsePdu(MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION, functionCode, output);
+
          return true;
    }
 
    size_t functionResponseSize;
-   ModbusSDeviceBaseProtocolException exception =
-         function(handle,
-                  operationContext,
-                  (FunctionInput)
-                  {
-                     .Request     = &input.Pdu->Data.AsFunctionRequest,
-                     .RequestSize = input.PduSize - EMPTY_PDU_SIZE
-                  },
-                  (FunctionOutput)
-                  {
-                     .Response     = &output.Pdu->Data.AsFunctionResponse,
-                     .ResponseSize = &functionResponseSize
-                  });
+   BaseProtocolException exception =
+         functionProcessor(handle,
+                           (ProcessingStageInput)
+                           {
+                              .RequestData       = request->FunctionData,
+                              .OperationContext  = input.OperationContext,
+                              .RequestSize       = input.RequestSize - EMPTY_PDU_SIZE,
+                              .IsOutputMandatory = input.IsOutputMandatory
+                           },
+                           (ProcessingStageOutput)
+                           {
+                              .ResponseData = response->FunctionData,
+                              .ResponseSize = &functionResponseSize
+                           });
 
-   if(exception != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
+   if(exception == MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR)
+      return false;
+
+   if(input.IsOutputMandatory)
    {
-      if(exception == MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR)
-         return false;
+      if(exception != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
+      {
+         EncodeExceptionResponsePdu(exception, functionCode, output);
+      }
+      else
+      {
+         response->FunctionCode = functionCode;
 
-      EncodeExceptionResponsePdu(exception, input.Pdu->FunctionCode, output);
-   }
-   else
-   {
-      output.Pdu->FunctionCode = input.Pdu->FunctionCode;
-
-      *output.PduSize = EMPTY_PDU_SIZE + functionResponseSize;
+         *output.ResponseSize = EMPTY_PDU_SIZE + functionResponseSize;
+      }
    }
 
    return true;

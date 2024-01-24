@@ -28,9 +28,15 @@ typedef enum
 
 typedef struct
 {
+   bool IsBroadcast;
+} ModbusSDeviceBaseBroadcastContext;
+
+typedef struct
+{
    void    *RegistersData;
    uint16_t RegistersCount;
    uint16_t RegistersAddress;
+   bool     IsRegistersDataMandatory;
 } ModbusSDeviceBaseReadOperationParameters;
 
 typedef struct
@@ -44,8 +50,8 @@ typedef struct
 {
    ModbusSDeviceBaseProtocolException (* ReadOperation)(void                                           *handle,
                                                         const ModbusSDeviceBaseReadOperationParameters *parameters,
-                                                        const void                                     *callContext);
+                                                        const void                                     *context);
    ModbusSDeviceBaseProtocolException (* WriteOperation)(void                                            *handle,
                                                          const ModbusSDeviceBaseWriteOperationParameters *parameters,
-                                                         const void                                      *callContext);
+                                                         const void                                      *context);
 } ModbusSDeviceBaseInitData;

@@ -1,33 +1,12 @@
-#include "private.h"
 #include "BtuBlock/btu_block.h"
 
 #include "SDeviceCore/heap.h"
 
 #define MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID 0x0000
 #define MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID 0x0074
-
-#define EMPTY_UDP_ADU_SIZE (sizeof(UdpAdu) - SIZEOF_MEMBER(UdpAdu, Data))
-
-typedef struct __attribute__((packed, __may_alias__))
-{
-   uint16_t TransactionId;
-   uint16_t ProtocolId;
-   uint16_t PacketSize;
-   uint8_t  SlaveAddress;
-} UdpMbapHeader;
-
-typedef struct __attribute__((packed, __may_alias__))
-{
-   UdpMbapHeader MbapHeader;
-   union
-   {
-      MessagePdu  AsPdu;
-      UdpBtuBlock AsBtuBlock;
-   } Data;
-} UdpAdu;
+#define EMPTY_UDP_ADU_SIZE sizeof(UdpAdu)
 
 SDEVICE_IDENTITY_BLOCK_DEFINITION(ModbusUdp,
-                                  NULL,
                                   ((const SDeviceUuid)
                                   {
                                      .High = MODBUS_UDP_SDEVICE_UUID_HIGH,
@@ -39,6 +18,24 @@ SDEVICE_IDENTITY_BLOCK_DEFINITION(ModbusUdp,
                                      .Minor = MODBUS_UDP_SDEVICE_VERSION_MINOR,
                                      .Patch = MODBUS_UDP_SDEVICE_VERSION_PATCH
                                   }));
+
+typedef struct __attribute__((packed, may_alias))
+{
+   uint16_t TransactionIdx;
+   uint16_t ProtocolIdx;
+   uint16_t PacketSize;
+   uint8_t  SlaveAddress;
+} UdpMbapHeader;
+
+typedef struct __attribute__((packed, may_alias))
+{
+   UdpMbapHeader MbapHeader;
+   uint8_t       PduBytes[];
+} UdpAdu;
+
+typedef bool (* RequestPduTryProcessFunction)(void                 *handle,
+                                              ProcessingStageInput  input,
+                                              ProcessingStageOutput output);
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context)
 {
@@ -59,6 +56,8 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context)
       .Identifier    = identifier
    };
    *handle->Init = *_init;
+
+   handle->Runtime->Base.SupportsBroadcasts = true;
 
    return handle;
 }
@@ -100,9 +99,9 @@ SDEVICE_SET_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
    return SDEVICE_PROPERTY_STATUS_OK;
 }
 
-bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
-                                       ModbusUdpSDeviceInput  input,
-                                       ModbusUdpSDeviceOutput output)
+bool ModbusUdpSDeviceTryProcessRequest(ThisHandle *handle,
+                                       ThisInput   input,
+                                       ThisOutput  output)
 {
    SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
 
@@ -114,60 +113,72 @@ bool ModbusUdpSDeviceTryProcessRequest(ThisHandle            *handle,
    UdpAdu *response = output.ResponseData;
 
    if(input.RequestSize < EMPTY_UDP_ADU_SIZE ||
-      __builtin_bswap16(request->MbapHeader.PacketSize) !=
-            input.RequestSize - (EMPTY_UDP_ADU_SIZE - SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress)))
+      input.RequestSize - (EMPTY_UDP_ADU_SIZE - SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress)) !=
+            SWAP_UINT16_BYTES(request->MbapHeader.PacketSize))
    {
       SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
-   size_t responseDataSize;
-   bool wasProcessingSuccessful;
-   uint16_t protocolId = request->MbapHeader.ProtocolId;
-   ModbusUdpSDeviceOperationContext context = { .SlaveAddress = request->MbapHeader.SlaveAddress };
+   uint16_t protocolIdx = request->MbapHeader.ProtocolIdx;
+   uint16_t transactionIdx = request->MbapHeader.TransactionIdx;
+   uint8_t slaveAddress = request->MbapHeader.SlaveAddress;
+   bool isBroadcastRequest;
 
-   switch(protocolId)
+   RequestPduTryProcessFunction pduProcessor;
+   switch(protocolIdx)
    {
-      case __builtin_bswap16(MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID):
-         context.IsBroadcast = input.IsBroadcast;
-         wasProcessingSuccessful =
-               ModbusSDeviceBaseTryProcessRequestPdu(handle,
+      case SWAP_UINT16_BYTES(MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID):
+         isBroadcastRequest = input.IsBroadcast;
+         pduProcessor = ModbusSDeviceBaseTryProcessRequestPdu;
          break;
 
-      case __builtin_bswap16(MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID):
-         context.IsBroadcast = false;
-         wasProcessingSuccessful =
-               TryProcessRequestUdpBtuBlock(handle,
-                                            &context,
-                                            (UdpBtuBlockInput)
-                                            {
-                                               .BtuBlock     = &request->Data.AsBtuBlock,
-                                               .BtuBlockSize = input.RequestSize - EMPTY_UDP_ADU_SIZE
-                                            },
-                                            (UdpBtuBlockOutput)
-                                            {
-                                               .BtuBlock     = &response->Data.AsBtuBlock,
-                                               .BtuBlockSize = &responseDataSize
-                                            });
+      case SWAP_UINT16_BYTES(MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID):
+         isBroadcastRequest = false;
+         pduProcessor = TryProcessRequestUdpBtuBlock;
          break;
 
       default:
-         SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_PROTOCOL_ID);
+         if(!input.IsBroadcast)
+            SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_PROTOCOL_ID);
+
          return false;
    }
+
+   size_t responseDataSize;
+   bool wasProcessingSuccessful =
+         pduProcessor(handle,
+                      (ProcessingStageInput)
+                      {
+                         .RequestData       = request->PduBytes,
+                         .OperationContext  = &(const ThisOperationContext)
+                         {
+                            .Base.IsBroadcast = isBroadcastRequest,
+                            .SlaveAddress = slaveAddress
+                         },
+                         .RequestSize       = input.RequestSize - EMPTY_UDP_ADU_SIZE,
+                         .IsOutputMandatory = true
+                      },
+                      (ProcessingStageOutput)
+                      {
+                         .ResponseData = response->PduBytes,
+                         .ResponseSize = &responseDataSize
+                      });
 
    if(wasProcessingSuccessful)
    {
       response->MbapHeader = (UdpMbapHeader)
       {
-         .ProtocolId    = protocolId,
-         .TransactionId = request->MbapHeader.TransactionId,
-         .SlaveAddress  = context.SlaveAddress,
-         .PacketSize    = __builtin_bswap16(responseDataSize + SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress))
+         .ProtocolIdx    = protocolIdx,
+         .TransactionIdx = transactionIdx,
+         .SlaveAddress   = slaveAddress,
+         .PacketSize     = SWAP_UINT16_BYTES(responseDataSize + SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress))
       };
 
       *output.ResponseSize = EMPTY_UDP_ADU_SIZE + responseDataSize;
+
+      return true;
    }
 
-   return wasProcessingSuccessful;
+   return false;
 }

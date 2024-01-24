@@ -14,14 +14,14 @@
 #define MODBUS_UDP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_BASE_VERSION_MINOR
 #define MODBUS_UDP_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_BASE_VERSION_PATCH
 
-#define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE ((size_t)260)
+#define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE 260U
 #define MODBUS_UDP_SDEVICE_MAX_BTU_MESSAGE_SIZE (MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE +                                 \
                                                  MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE)
 
 typedef struct
 {
-   bool    IsBroadcast;
-   uint8_t SlaveAddress;
+   ModbusSDeviceBaseBroadcastContext Base;
+   uint8_t                           SlaveAddress;
 } ModbusUdpSDeviceOperationContext;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusUdp);

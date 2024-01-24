@@ -49,7 +49,7 @@ typedef struct
 
 bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,
                                           const void                *mbapHeaderData,
-                                          size_t                    *requestSizeToReceive);
+                                          size_t                    *leftPacketSize);
 bool ModbusTcpSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusTcp) *handle,
                                        ModbusTcpSDeviceInput      input,
                                        ModbusTcpSDeviceOutput     output);
