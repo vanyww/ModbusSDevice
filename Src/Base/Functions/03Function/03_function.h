@@ -45,10 +45,6 @@ static ModbusSDeviceBaseProtocolException ProcessRequest03Function(void         
 
       *output.ResponseSize = readRegistersSize + sizeof(Function03Response);
    }
-   else
-   {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_REGISTERS_ACCESS_FAIL);
-   }
 
    return operationException;
 }
