@@ -3,15 +3,7 @@
 #include "ModbusSDevice/Rtu/public.h"
 #include "../Base/private.h"
 
-#define IS_VALID_THIS_HANDLE(handle) (                                                                                 \
-   {                                                                                                                   \
-      ThisHandle *_handle = (handle);                                                                                  \
-      _handle != NULL          &&                                                                                      \
-      _handle->Init != NULL    &&                                                                                      \
-      _handle->Runtime != NULL &&                                                                                      \
-      SDeviceCompareIdentityBlocks(SDeviceGetHandleIdentityBlock(_handle),                                             \
-                                   &SDEVICE_IDENTITY_BLOCK(ModbusRtu));                                                \
-   })
+#define IS_VALID_THIS_HANDLE(handle) SDEVICE_IS_VALID_HANDLE(ModbusRtu, handle)
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
 
@@ -26,4 +18,5 @@ SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusRtu);
 
 typedef ModbusRtuSDeviceInput ThisInput;
 typedef ModbusRtuSDeviceOutput ThisOutput;
+
 typedef ModbusRtuSDeviceOperationContext ThisOperationContext;

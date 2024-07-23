@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dependencies_base.h"
 #include "config_base.h"
+#include "dependencies_base.h"
 #include "log_base.h"
 
 #define MODBUS_SDEVICE_BASE_VERSION_MAJOR 4
@@ -48,10 +48,13 @@ typedef struct
 
 typedef struct
 {
-   ModbusSDeviceBaseProtocolException (* ReadOperation)(void                                           *handle,
-                                                        const ModbusSDeviceBaseReadOperationParameters *parameters,
-                                                        const void                                     *context);
-   ModbusSDeviceBaseProtocolException (* WriteOperation)(void                                            *handle,
-                                                         const ModbusSDeviceBaseWriteOperationParameters *parameters,
-                                                         const void                                      *context);
+   ModbusSDeviceBaseProtocolException (* ReadOperation)(
+         void                                           *handle,
+         const ModbusSDeviceBaseReadOperationParameters *parameters,
+         const void                                     *context);
+
+   ModbusSDeviceBaseProtocolException (* WriteOperation)(
+         void                                            *handle,
+         const ModbusSDeviceBaseWriteOperationParameters *parameters,
+         const void                                      *context);
 } ModbusSDeviceBaseInitData;

@@ -2,13 +2,13 @@
 
 #include "../private.h"
 
-typedef struct __attribute__((packed, may_alias))
+typedef struct __attribute__((packed))
 {
    uint8_t ExceptionCode;
-} ExceptionFunctionResponse;
+} __attribute__((may_alias)) ExceptionFunctionResponse;
 
 __attribute__((always_inline))
-static inline void ProcessExceptionFunction(BaseProtocolException exception, ProcessingStageOutput output)
+static inline void ProcessExceptionFunction(ThisBaseProtocolException exception, PduProcessingStageOutput output)
 {
    ExceptionFunctionResponse *response = output.ResponseData;
 

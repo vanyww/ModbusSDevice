@@ -2,13 +2,13 @@
 
 #include "ModbusSDevice/public_base.h"
 
-#include "dependencies.h"
 #include "config.h"
+#include "dependencies.h"
 #include "log.h"
 
-/* 5e168276-5933-11ee-a30e-b3f58c691376 */
-#define MODBUS_TCP_SDEVICE_UUID_HIGH 0x5e168276593311ee
-#define MODBUS_TCP_SDEVICE_UUID_LOW  0xa30eb3f58c691376
+/* 5E168276-5933-11EE-A30E-B3F58C691376 */
+#define MODBUS_TCP_SDEVICE_UUID_HIGH 0x5E168276593311EE
+#define MODBUS_TCP_SDEVICE_UUID_LOW  0xA30EB3F58C691376
 
 #define MODBUS_TCP_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_BASE_VERSION_MAJOR
 #define MODBUS_TCP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_BASE_VERSION_MINOR
@@ -47,9 +47,12 @@ typedef struct
    size_t *ResponseSize;
 } ModbusTcpSDeviceOutput;
 
-bool ModbusTcpSDeviceTryProcessMbapHeader(SDEVICE_HANDLE(ModbusTcp) *handle,
-                                          const void                *mbapHeaderData,
-                                          size_t                    *leftPacketSize);
-bool ModbusTcpSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusTcp) *handle,
-                                       ModbusTcpSDeviceInput      input,
-                                       ModbusTcpSDeviceOutput     output);
+bool ModbusTcpSDeviceTryProcessMbapHeader(
+      SDEVICE_HANDLE(ModbusTcp) *handle,
+      const void                *mbapHeaderData,
+      size_t                    *leftPacketSize);
+
+bool ModbusTcpSDeviceTryProcessRequest(
+      SDEVICE_HANDLE(ModbusTcp) *handle,
+      ModbusTcpSDeviceInput      input,
+      ModbusTcpSDeviceOutput     output);

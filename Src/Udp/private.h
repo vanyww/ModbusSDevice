@@ -3,14 +3,7 @@
 #include "ModbusSDevice/Udp/public.h"
 #include "../Base/private.h"
 
-#define IS_VALID_THIS_HANDLE(handle) (                                                                                 \
-   {                                                                                                                   \
-      ThisHandle *_handle = (handle);                                                                                  \
-      _handle != NULL       &&                                                                                         \
-      _handle->Init != NULL &&                                                                                         \
-      SDeviceCompareIdentityBlocks(SDeviceGetHandleIdentityBlock(_handle),                                             \
-                                   &SDEVICE_IDENTITY_BLOCK(ModbusUdp));                                                \
-   })
+#define IS_VALID_THIS_HANDLE(handle) SDEVICE_IS_VALID_HANDLE(ModbusUdp, handle)
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusUdp);
 
@@ -25,4 +18,5 @@ SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusUdp);
 
 typedef ModbusUdpSDeviceInput ThisInput;
 typedef ModbusUdpSDeviceOutput ThisOutput;
+
 typedef ModbusUdpSDeviceOperationContext ThisOperationContext;

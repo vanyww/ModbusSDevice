@@ -11,7 +11,7 @@ bool TestRtuReadOneRequest(void)
    uint8_t slaveAddress = 0xAA;
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
          SDEVICE_HANDLE(ModbusRtu) *handle = CreateModbusRtuSDevice();
-   SDEVICE_SET_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
 
    MockReadRegisters[0] = 0xBBCC;
 
@@ -47,7 +47,7 @@ bool TestRtuReadMultipleRequest(void)
    uint8_t slaveAddress = 0xAA;
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
          SDEVICE_HANDLE(ModbusRtu) *handle = CreateModbusRtuSDevice();
-   SDEVICE_SET_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
 
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
@@ -85,7 +85,7 @@ bool TestRtuReadTooManyRequest(void)
    uint8_t slaveAddress = 0xAA;
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
          SDEVICE_HANDLE(ModbusRtu) *handle = CreateModbusRtuSDevice();
-   SDEVICE_SET_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
 
    const uint8_t request[] = { 0xAA, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { 0xAA, 0x83, 0x03, 0x70, 0xD1 };
@@ -119,7 +119,7 @@ bool TestRtuReadWithWrongSlaveAddressRequest(void)
    uint8_t slaveAddress = 0xAA;
    __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
          SDEVICE_HANDLE(ModbusRtu) *handle = CreateModbusRtuSDevice();
-   SDEVICE_SET_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];

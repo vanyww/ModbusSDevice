@@ -11,7 +11,7 @@ bool TestUdpReadOneRequest(void)
          SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
 
@@ -44,7 +44,7 @@ bool TestUdpReadMultipleRequest(void)
          SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
@@ -78,7 +78,7 @@ bool TestUdpReadOneBtuRequest(void)
          SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
 

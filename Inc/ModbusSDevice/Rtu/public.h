@@ -2,13 +2,13 @@
 
 #include "ModbusSDevice/public_base.h"
 
-#include "dependencies.h"
 #include "config.h"
+#include "dependencies.h"
 #include "log.h"
 
-/* 5493ec89-587e-11ee-9b7e-794b1a809a09 */
-#define MODBUS_RTU_SDEVICE_UUID_HIGH 0x5493ec89587e11ee
-#define MODBUS_RTU_SDEVICE_UUID_LOW  0x9b7e794b1a809a09
+/* 5493EC89-587E-11EE-9B7E-794B1A809A09 */
+#define MODBUS_RTU_SDEVICE_UUID_HIGH 0x5493EC89587E11EE
+#define MODBUS_RTU_SDEVICE_UUID_LOW  0x9B7E794B1A809A09
 
 #define MODBUS_RTU_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_BASE_VERSION_MAJOR
 #define MODBUS_RTU_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_BASE_VERSION_MINOR
@@ -62,8 +62,8 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, owner, identifier, context);
 SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer);
 
 SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusRtu, SlaveAddress, uint8_t);
-SDEVICE_GET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value);
-SDEVICE_SET_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value);
+SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value);
+SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value);
 
 typedef struct
 {
@@ -77,6 +77,7 @@ typedef struct
    size_t *ResponseSize;
 } ModbusRtuSDeviceOutput;
 
-bool ModbusRtuSDeviceTryProcessRequest(SDEVICE_HANDLE(ModbusRtu) *handle,
-                                       ModbusRtuSDeviceInput      input,
-                                       ModbusRtuSDeviceOutput     output);
+bool ModbusRtuSDeviceTryProcessRequest(
+      SDEVICE_HANDLE(ModbusRtu) *handle,
+      ModbusRtuSDeviceInput      input,
+      ModbusRtuSDeviceOutput     output);

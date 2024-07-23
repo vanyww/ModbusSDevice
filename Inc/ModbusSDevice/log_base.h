@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SDeviceCore/errors.h"
+
 typedef enum
 {
    MODBUS_SDEVICE_STATUS_OK,
