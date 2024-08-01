@@ -11,19 +11,19 @@
 #if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
    #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
       {                                                                                                                \
-         __auto_type $$address = (address);                                                                            \
+         __auto_type _address = (address);                                                                             \
                                                                                                                        \
-         $$address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                           \
-         $$address != MODBUS_RTU_SDEVICE_PTP_ADDRESS      &&                                                           \
-         $$address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                     \
+         _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                            \
+         _address != MODBUS_RTU_SDEVICE_PTP_ADDRESS      &&                                                            \
+         _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                      \
       })
 #else
    #define RTU_IS_VALID_SLAVE_ADDRESS(address) (                                                                       \
       {                                                                                                                \
-         __auto_type $$address = (address);                                                                            \
+         __auto_type _address = (address);                                                                             \
                                                                                                                        \
-         $$address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                           \
-         $$address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                     \
+         _address != RTU_BROADCAST_REQUEST_SLAVE_ADDRESS &&                                                            \
+         _address <= RTU_MAX_VALID_SLAVE_ADDRESS;                                                                      \
       })
 #endif
 
@@ -117,7 +117,7 @@ SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 
    if(!RTU_IS_VALID_SLAVE_ADDRESS(address))
    {
-      SDeviceLogStatus(_handle, MODBUS_RTU_SDEVICE_STATUS_SLAVE_ADDRESS_SET_INVALID);
+      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_SLAVE_ADDRESS_SET_INVALID);
       return SDEVICE_PROPERTY_STATUS_VALIDATION_ERROR;
    }
 
