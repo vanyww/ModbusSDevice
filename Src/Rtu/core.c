@@ -145,20 +145,26 @@ bool ModbusRtuSDeviceTryProcessRequest(
 
    const RTU_ADU(input.RequestSize - EMPTY_RTU_ADU_SIZE) *request = input.RequestData;
 
-   bool isBroadcastRequest;
-   uint8_t slaveAddress = request->SlaveAddress;
-
 #if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
-   if(slaveAddress == handle->Runtime->SlaveAddress || slaveAddress == MODBUS_RTU_SDEVICE_PTP_ADDRESS)
-#else
-   if(slaveAddress == handle->Runtime->SlaveAddress)
+   bool isRequestPtp;
 #endif
+
+   bool isRequestBroadcast;
+   uint8_t requestSlaveAddress = request->SlaveAddress;
+
+   if(requestSlaveAddress == handle->Runtime->SlaveAddress)
    {
-      isBroadcastRequest = false;
+      isRequestBroadcast = false;
    }
-   else if(slaveAddress == RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
+#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
+   else if(requestSlaveAddress == MODBUS_RTU_SDEVICE_PTP_ADDRESS)
    {
-      isBroadcastRequest = true;
+      isRequestPtp = true;
+   }
+#endif
+   else if(requestSlaveAddress == RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
+   {
+      isRequestBroadcast = true;
    }
    else
    {
@@ -180,10 +186,10 @@ bool ModbusRtuSDeviceTryProcessRequest(
                   .RequestData       = request->PduBytes,
                   .OperationContext  = &(const ThisOperationContext)
                   {
-                     .Base.IsBroadcast = isBroadcastRequest
+                     .Base.IsBroadcast = isRequestBroadcast
                   },
                   .RequestSize       = input.RequestSize - EMPTY_RTU_ADU_SIZE,
-                  .IsOutputMandatory = !isBroadcastRequest
+                  .IsOutputMandatory = !isRequestBroadcast
                },
                (PduProcessingStageOutput)
                {
@@ -193,15 +199,30 @@ bool ModbusRtuSDeviceTryProcessRequest(
 
    if(wasPduProcessingSuccessful)
    {
-      if(isBroadcastRequest)
+      if(isRequestBroadcast)
       {
          *output.ResponseSize = 0;
       }
       else
       {
+         uint8_t responseSlaveAddress;
+
+#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
+         if(isRequestBroadcast || isRequestPtp)
+#else
+         if(isRequestBroadcast)
+#endif
+         {
+            responseSlaveAddress = handle->Runtime->SlaveAddress;
+         }
+         else
+         {
+            responseSlaveAddress = requestSlaveAddress;
+         }
+
          RTU_ADU(pduResponseSize) *response = output.ResponseData;
 
-         response->SlaveAddress = (isBroadcastRequest) ? handle->Runtime->SlaveAddress : slaveAddress;
+         response->SlaveAddress = responseSlaveAddress;
          response->Crc16        = ComputeCrc16(handle, response, sizeof(*response) - sizeof(response->Crc16));
 
          *output.ResponseSize = sizeof(*response);
