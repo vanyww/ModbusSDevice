@@ -36,6 +36,17 @@
    } __attribute__((may_alias))
 #define EMPTY_RTU_ADU_SIZE sizeof(RTU_ADU(0))
 
+typedef enum
+{
+   REQUEST_TYPE_NORMAL,
+
+#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
+   REQUEST_TYPE_PTP,
+#endif
+
+   REQUEST_TYPE_BROADCAST
+} RequestType;
+
 SDEVICE_IDENTITY_BLOCK_DEFINITION(
       ModbusRtu,
       ((const SDeviceUuid)
@@ -145,26 +156,22 @@ bool ModbusRtuSDeviceTryProcessRequest(
 
    const RTU_ADU(input.RequestSize - EMPTY_RTU_ADU_SIZE) *request = input.RequestData;
 
-#if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
-   bool isRequestPtp;
-#endif
-
-   bool isRequestBroadcast;
+   RequestType requestType;
    uint8_t requestSlaveAddress = request->SlaveAddress;
 
    if(requestSlaveAddress == handle->Runtime->SlaveAddress)
    {
-      isRequestBroadcast = false;
+      requestType = REQUEST_TYPE_NORMAL;
    }
 #if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
    else if(requestSlaveAddress == MODBUS_RTU_SDEVICE_PTP_ADDRESS)
    {
-      isRequestPtp = true;
+      requestType = REQUEST_TYPE_PTP;
    }
 #endif
    else if(requestSlaveAddress == RTU_BROADCAST_REQUEST_SLAVE_ADDRESS)
    {
-      isRequestBroadcast = true;
+      requestType = REQUEST_TYPE_BROADCAST;
    }
    else
    {
@@ -186,10 +193,10 @@ bool ModbusRtuSDeviceTryProcessRequest(
                   .RequestData       = request->PduBytes,
                   .CallParameters    = &(const ThisCallParameters)
                   {
-                     .Base.IsBroadcast = isRequestBroadcast
+                     .Base.IsBroadcast = (requestType == REQUEST_TYPE_BROADCAST)
                   },
                   .RequestSize       = input.RequestSize - EMPTY_RTU_ADU_SIZE,
-                  .IsOutputMandatory = !isRequestBroadcast
+                  .IsOutputMandatory = (requestType != REQUEST_TYPE_BROADCAST)
                },
                (PduProcessingStageOutput)
                {
@@ -199,26 +206,18 @@ bool ModbusRtuSDeviceTryProcessRequest(
 
    if(wasPduProcessingSuccessful)
    {
-      if(isRequestBroadcast)
+      if(requestType == REQUEST_TYPE_BROADCAST)
       {
          *output.ResponseSize = 0;
       }
       else
       {
-         uint8_t responseSlaveAddress;
-
+         uint8_t responseSlaveAddress =
 #if MODBUS_RTU_SDEVICE_USE_PTP_ADDRESS
-         if(isRequestBroadcast || isRequestPtp)
+               (requestType == REQUEST_TYPE_PTP) ? handle->Runtime->SlaveAddress : requestSlaveAddress;
 #else
-         if(isRequestBroadcast)
+               requestSlaveAddress;
 #endif
-         {
-            responseSlaveAddress = handle->Runtime->SlaveAddress;
-         }
-         else
-         {
-            responseSlaveAddress = requestSlaveAddress;
-         }
 
          RTU_ADU(pduResponseSize) *response = output.ResponseData;
 
