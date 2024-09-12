@@ -19,7 +19,7 @@ typedef struct
    size_t *ResponseSize;
 } PduProcessingStageOutput;
 
-typedef struct
+typedef struct __attribute__((may_alias))
 {
    bool SupportsBroadcasting;
 } BaseRuntimeData;
