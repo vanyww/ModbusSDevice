@@ -157,8 +157,8 @@ bool ModbusUdpSDeviceTryProcessRequest(
                handle,
                (PduProcessingStageInput)
                {
-                  .RequestData      = request->PduBytes,
-                  .OperationContext = &(const ThisOperationContext)
+                  .RequestData       = request->PduBytes,
+                  .CallParameters    = &(const ThisCallParameters)
                   {
                      .Base.IsBroadcast = isBroadcastRequest,
                      .SlaveAddress     = slaveAddress

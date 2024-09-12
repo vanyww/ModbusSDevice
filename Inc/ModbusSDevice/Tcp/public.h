@@ -20,7 +20,7 @@
 typedef struct
 {
    uint8_t SlaveAddress;
-} ModbusTcpSDeviceOperationContext;
+} ModbusTcpSDeviceCallParameters;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusTcp);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusTcp);

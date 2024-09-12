@@ -137,7 +137,7 @@ bool ModbusTcpSDeviceTryProcessRequest(
                (PduProcessingStageInput)
                {
                   .RequestData       = input.RequestData,
-                  .OperationContext  = &(const ThisOperationContext)
+                  .CallParameters    = &(const ThisCallParameters)
                   {
                      .SlaveAddress = handle->Runtime->MbapHeaderData.SlaveAddress
                   },

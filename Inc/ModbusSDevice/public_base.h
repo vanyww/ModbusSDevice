@@ -50,11 +50,11 @@ typedef struct
 {
    ModbusSDeviceBaseProtocolException (* ReadOperation)(
          void                                           *handle,
-         const ModbusSDeviceBaseReadOperationParameters *parameters,
-         const void                                     *context);
+         const ModbusSDeviceBaseReadOperationParameters *operationParameters,
+         const void                                     *callParameters);
 
    ModbusSDeviceBaseProtocolException (* WriteOperation)(
          void                                            *handle,
-         const ModbusSDeviceBaseWriteOperationParameters *parameters,
-         const void                                      *context);
+         const ModbusSDeviceBaseWriteOperationParameters *operationParameters,
+         const void                                      *callParameters);
 } ModbusSDeviceBaseInitData;

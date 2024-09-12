@@ -184,7 +184,7 @@ bool ModbusRtuSDeviceTryProcessRequest(
                (PduProcessingStageInput)
                {
                   .RequestData       = request->PduBytes,
-                  .OperationContext  = &(const ThisOperationContext)
+                  .CallParameters    = &(const ThisCallParameters)
                   {
                      .Base.IsBroadcast = isRequestBroadcast
                   },

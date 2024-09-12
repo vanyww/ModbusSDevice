@@ -25,4 +25,4 @@ SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusTcp);
 typedef ModbusTcpSDeviceInput ThisInput;
 typedef ModbusTcpSDeviceOutput ThisOutput;
 
-typedef ModbusTcpSDeviceOperationContext ThisOperationContext;
+typedef ModbusTcpSDeviceCallParameters ThisCallParameters;

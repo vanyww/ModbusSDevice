@@ -77,7 +77,7 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
          break;
 
       default:
-         if(!SupportsBroadcasting(handle) || !((const ThisBaseBroadcastContext *)input.OperationContext)->IsBroadcast)
+         if(!SupportsBroadcasting(handle) || !((const ThisBaseBroadcastContext *)input.CallParameters)->IsBroadcast)
             SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_FUNCTION_CODE);
 
          if(input.IsOutputMandatory)
@@ -93,7 +93,7 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
                (PduProcessingStageInput)
                {
                   .RequestData       = request->FunctionData,
-                  .OperationContext  = input.OperationContext,
+                  .CallParameters    = input.CallParameters,
                   .RequestSize       = input.RequestSize - EMPTY_PDU_SIZE,
                   .IsOutputMandatory = input.IsOutputMandatory
                },

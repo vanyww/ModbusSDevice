@@ -19,4 +19,4 @@ SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusUdp);
 typedef ModbusUdpSDeviceInput ThisInput;
 typedef ModbusUdpSDeviceOutput ThisOutput;
 
-typedef ModbusUdpSDeviceOperationContext ThisOperationContext;
+typedef ModbusUdpSDeviceCallParameters ThisCallParameters;

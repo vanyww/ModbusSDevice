@@ -52,7 +52,7 @@ static ThisBaseProtocolException Process16FunctionRequest(
                   .RegistersAddress = registersAddress,
                   .RegistersCount   = registersCount
                },
-               input.OperationContext);
+               input.CallParameters);
 
    if(operationException != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
       return operationException;

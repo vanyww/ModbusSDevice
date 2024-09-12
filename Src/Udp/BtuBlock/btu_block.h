@@ -39,7 +39,7 @@ static bool TryProcessRequestUdpBtuBlock(
                (PduProcessingStageInput)
                {
                   .RequestData       = request->PduBytes,
-                  .OperationContext  = input.OperationContext,
+                  .CallParameters    = input.CallParameters,
                   .RequestSize       = input.RequestSize - EMPTY_UDP_BTU_BLOCK_SIZE,
                   .IsOutputMandatory = input.IsOutputMandatory
                },

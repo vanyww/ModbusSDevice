@@ -51,7 +51,7 @@ static ThisBaseProtocolException Process03FunctionRequest(
                   .RegistersAddress         = registersAddress,
                   .IsRegistersDataMandatory = input.IsOutputMandatory
                },
-               input.OperationContext);
+               input.CallParameters);
 
    if(operationException != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
       return operationException;

@@ -42,7 +42,7 @@
 typedef struct
 {
    ModbusSDeviceBaseBroadcastContext Base;
-} ModbusRtuSDeviceOperationContext;
+} ModbusRtuSDeviceCallParameters;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusRtu);

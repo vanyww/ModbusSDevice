@@ -22,7 +22,7 @@ typedef struct
 {
    ModbusSDeviceBaseBroadcastContext Base;
    uint8_t                           SlaveAddress;
-} ModbusUdpSDeviceOperationContext;
+} ModbusUdpSDeviceCallParameters;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusUdp);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusUdp);

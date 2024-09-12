@@ -19,4 +19,4 @@ SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusRtu);
 typedef ModbusRtuSDeviceInput ThisInput;
 typedef ModbusRtuSDeviceOutput ThisOutput;
 
-typedef ModbusRtuSDeviceOperationContext ThisOperationContext;
+typedef ModbusRtuSDeviceCallParameters ThisCallParameters;

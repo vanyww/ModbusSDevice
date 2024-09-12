@@ -8,7 +8,7 @@
 typedef struct
 {
    const void *RequestData;
-   const void *OperationContext;
+   const void *CallParameters;
    size_t      RequestSize;
    bool        IsOutputMandatory;
 } PduProcessingStageInput;
