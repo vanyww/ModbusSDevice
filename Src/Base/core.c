@@ -51,10 +51,7 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
       PduProcessingStageOutput output)
 {
    if(input.RequestSize < EMPTY_PDU_SIZE || input.RequestSize > MAX_PDU_SIZE)
-   {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
-   }
 
    const MessagePdu *request  = input.RequestData;
    MessagePdu       *response = output.ResponseData;
@@ -77,9 +74,6 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
          break;
 
       default:
-         if(!SupportsBroadcasting(handle) || !((const ThisBaseBroadcastContext *)input.CallParameters)->IsBroadcast)
-            SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_FUNCTION_CODE);
-
          if(input.IsOutputMandatory)
             EncodeExceptionResponsePdu(MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION, functionCode, output);
 

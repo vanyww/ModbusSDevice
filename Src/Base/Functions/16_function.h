@@ -22,10 +22,7 @@ static ThisBaseProtocolException Process16FunctionRequest(
       PduProcessingStageOutput output)
 {
    if(input.RequestSize < sizeof(Function16Request))
-   {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
-   }
 
    const Function16Request *request  = input.RequestData;
    Function16Response      *response = output.ResponseData;
@@ -38,7 +35,6 @@ static ThisBaseProtocolException Process16FunctionRequest(
       bytesToFollow / MODBUS_SDEVICE_BASE_REGISTER_SIZE != registersCount ||
       bytesToFollow % MODBUS_SDEVICE_BASE_REGISTER_SIZE)
    {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REGISTERS_COUNT);
       return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
    }
 

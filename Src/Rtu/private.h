@@ -3,8 +3,6 @@
 #include "ModbusSDevice/Rtu/public.h"
 #include "../Base/private.h"
 
-#define IS_VALID_THIS_HANDLE(handle) SDEVICE_IS_VALID_HANDLE(ModbusRtu, handle)
-
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusRtu)

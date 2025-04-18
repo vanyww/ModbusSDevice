@@ -2,23 +2,10 @@
 
 #include "SDeviceCore/heap.h"
 #include "SDeviceCore/common.h"
+#include "SDeviceCore/errors.h"
 
 #define MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID 0x0000
 #define EMPTY_TCP_ADU_SIZE sizeof(TcpAdu)
-
-SDEVICE_IDENTITY_BLOCK_DEFINITION(
-      ModbusTcp,
-      ((const SDeviceUuid)
-      {
-         .High = MODBUS_TCP_SDEVICE_UUID_HIGH,
-         .Low  = MODBUS_TCP_SDEVICE_UUID_LOW
-      }),
-      ((const SDeviceVersion)
-      {
-         .Major = MODBUS_TCP_SDEVICE_VERSION_MAJOR,
-         .Minor = MODBUS_TCP_SDEVICE_VERSION_MINOR,
-         .Patch = MODBUS_TCP_SDEVICE_VERSION_PATCH
-      }));
 
 typedef struct __attribute__((packed))
 {
@@ -36,7 +23,7 @@ typedef struct __attribute__((packed))
    uint8_t       PduBytes[];
 } __attribute__((may_alias)) TcpAdu;
 
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, owner, identifier, context)
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, context)
 {
    SDeviceAssert(init);
 
@@ -47,15 +34,7 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, owner, identifier, context)
 
    ThisHandle *instance = SDeviceAllocateHandle(sizeof(*instance->Init), sizeof(*instance->Runtime));
 
-   instance->Header = (SDeviceHandleHeader)
-   {
-      .Context       = context,
-      .OwnerHandle   = owner,
-      .IdentityBlock = &SDEVICE_IDENTITY_BLOCK(ModbusTcp),
-      .LatestStatus  = MODBUS_TCP_SDEVICE_STATUS_OK,
-      .Identifier    = identifier
-   };
-
+   instance->Context = context;
    *instance->Init = *_init;
 
    instance->Runtime->Base.SupportsBroadcasting = false;
@@ -70,7 +49,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceFreeHandle(handle);
 
@@ -82,7 +61,7 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(
       const void *mbapHeaderData,
       size_t     *leftPacketSize)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(mbapHeaderData);
    SDeviceAssert(leftPacketSize);
@@ -90,18 +69,12 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(
    const TcpMbapHeader *mbapHeader = mbapHeaderData;
 
    if(mbapHeader->ProtocolIdx != SWAP_UINT16_BYTES(MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID))
-   {
-      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_WRONG_PROTOCOL_ID);
       return false;
-   }
 
    handle->Runtime->MbapHeaderData.PacketSize = SWAP_UINT16_BYTES(mbapHeader->PacketSize);
 
    if(handle->Runtime->MbapHeaderData.PacketSize <= SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
-   {
-      SDeviceLogStatus(handle, MODBUS_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
-   }
 
    handle->Runtime->MbapHeaderData.SlaveAddress   = mbapHeader->SlaveAddress;
    handle->Runtime->MbapHeaderData.TransactionIdx = mbapHeader->TransactionIdx;
@@ -116,17 +89,14 @@ bool ModbusTcpSDeviceTryProcessRequest(
       ThisInput   input,
       ThisOutput  output)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(input.RequestData);
    SDeviceAssert(output.ResponseData);
    SDeviceAssert(output.ResponseSize);
 
    if(input.RequestSize != handle->Runtime->MbapHeaderData.PacketSize - SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
-   {
-      SDeviceLogStatus(handle, MODBUS_TCP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
-   }
 
    TcpAdu *response = output.ResponseData;
 

@@ -20,10 +20,7 @@ static bool TryProcessRequestUdpBtuBlock(
       PduProcessingStageOutput output)
 {
    if(input.RequestSize < EMPTY_UDP_BTU_BLOCK_SIZE)
-   {
-      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
-   }
 
    ThisHandle        *_handle  = handle;
    const UdpBtuBlock *request  = input.RequestData;

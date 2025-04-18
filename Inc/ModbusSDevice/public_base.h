@@ -2,7 +2,6 @@
 
 #include "config_base.h"
 #include "dependencies_base.h"
-#include "log_base.h"
 
 #define MODBUS_SDEVICE_BASE_VERSION_MAJOR 2
 #define MODBUS_SDEVICE_BASE_VERSION_MINOR 0

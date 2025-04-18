@@ -22,7 +22,7 @@ static inline void InitializeCrc16(void)
    };
 
    ModbusRtuSDeviceInternalCrc16Handle =
-         SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, NULL, MODBUS_RTU_SDEVICE_INTERNAL_CRC16_HANDLE_IDENTIFIER, NULL);
+         SDEVICE_CREATE_HANDLE(TableCrc16)(&crc16Init, NULL);
 #endif
 }
 

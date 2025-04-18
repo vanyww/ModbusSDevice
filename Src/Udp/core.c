@@ -1,24 +1,11 @@
 #include "BtuBlock/btu_block.h"
 
 #include "SDeviceCore/heap.h"
+#include "SDeviceCore/errors.h"
 
 #define MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID 0x0000
 #define MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID 0x0074
 #define EMPTY_UDP_ADU_SIZE sizeof(UdpAdu)
-
-SDEVICE_IDENTITY_BLOCK_DEFINITION(
-      ModbusUdp,
-      ((const SDeviceUuid)
-      {
-         .High = MODBUS_UDP_SDEVICE_UUID_HIGH,
-         .Low  = MODBUS_UDP_SDEVICE_UUID_LOW
-      }),
-      ((const SDeviceVersion)
-      {
-         .Major = MODBUS_UDP_SDEVICE_VERSION_MAJOR,
-         .Minor = MODBUS_UDP_SDEVICE_VERSION_MINOR,
-         .Patch = MODBUS_UDP_SDEVICE_VERSION_PATCH
-      }));
 
 typedef struct __attribute__((packed))
 {
@@ -39,7 +26,7 @@ typedef bool (* RequestPduTryProcessFunction)(
       PduProcessingStageInput  input,
       PduProcessingStageOutput output);
 
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context)
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, context)
 {
    SDeviceAssert(init);
 
@@ -50,15 +37,7 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, owner, identifier, context)
 
    ThisHandle *instance = SDeviceAllocateHandle(sizeof(*instance->Init), sizeof(*instance->Runtime));
 
-   instance->Header = (SDeviceHandleHeader)
-   {
-      .Context       = context,
-      .OwnerHandle   = owner,
-      .IdentityBlock = &SDEVICE_IDENTITY_BLOCK(ModbusUdp),
-      .LatestStatus  = MODBUS_UDP_SDEVICE_STATUS_OK,
-      .Identifier    = identifier
-   };
-
+   instance->Context = context;
    *instance->Init = *_init;
 
    instance->Runtime->Base.SupportsBroadcasting = true;
@@ -73,7 +52,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceFreeHandle(handle);
 
@@ -82,7 +61,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer)
 
 SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(value);
 
@@ -94,7 +73,7 @@ SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
 
 SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(value);
 
@@ -109,7 +88,7 @@ bool ModbusUdpSDeviceTryProcessRequest(
       ThisInput   input,
       ThisOutput  output)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(input.RequestData);
    SDeviceAssert(output.ResponseData);
@@ -122,7 +101,6 @@ bool ModbusUdpSDeviceTryProcessRequest(
       input.RequestSize - (EMPTY_UDP_ADU_SIZE - SIZEOF_MEMBER(UdpAdu, MbapHeader.SlaveAddress)) !=
             SWAP_UINT16_BYTES(request->MbapHeader.PacketSize))
    {
-      SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
    }
 
@@ -145,9 +123,6 @@ bool ModbusUdpSDeviceTryProcessRequest(
          break;
 
       default:
-         if(!input.IsBroadcast)
-            SDeviceLogStatus(handle, MODBUS_UDP_SDEVICE_STATUS_WRONG_PROTOCOL_ID);
-
          return false;
    }
 

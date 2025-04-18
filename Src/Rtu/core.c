@@ -2,6 +2,7 @@
 #include "Crc/crc.h"
 
 #include "SDeviceCore/heap.h"
+#include "SDeviceCore/errors.h"
 
 #include <memory.h>
 
@@ -47,21 +48,7 @@ typedef enum
    REQUEST_TYPE_BROADCAST
 } RequestType;
 
-SDEVICE_IDENTITY_BLOCK_DEFINITION(
-      ModbusRtu,
-      ((const SDeviceUuid)
-      {
-         .High = MODBUS_RTU_SDEVICE_UUID_HIGH,
-         .Low  = MODBUS_RTU_SDEVICE_UUID_LOW
-      }),
-      ((const SDeviceVersion)
-      {
-         .Major = MODBUS_RTU_SDEVICE_VERSION_MAJOR,
-         .Minor = MODBUS_RTU_SDEVICE_VERSION_MINOR,
-         .Patch = MODBUS_RTU_SDEVICE_VERSION_PATCH
-      }));
-
-SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, owner, identifier, context)
+SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, context)
 {
    SDeviceAssert(init);
 
@@ -72,15 +59,7 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, owner, identifier, context)
 
    ThisHandle *instance = SDeviceAllocateHandle(sizeof(*instance->Init), sizeof(*instance->Runtime));
 
-   instance->Header = (SDeviceHandleHeader)
-   {
-      .Context       = context,
-      .OwnerHandle   = owner,
-      .IdentityBlock = &SDEVICE_IDENTITY_BLOCK(ModbusRtu),
-      .LatestStatus  = MODBUS_RTU_SDEVICE_STATUS_OK,
-      .Identifier    = identifier
-   };
-
+   instance->Context = context;
    *instance->Init = *_init;
 
    instance->Runtime->Base.SupportsBroadcasting = true;
@@ -97,7 +76,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer)
    ThisHandle **_handlePointer = handlePointer;
    ThisHandle *handle = *_handlePointer;
 
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceFreeHandle(handle);
 
@@ -106,7 +85,7 @@ SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusRtu, handlePointer)
 
 SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(value);
 
@@ -118,7 +97,7 @@ SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 
 SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(value);
 
@@ -127,10 +106,7 @@ SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusRtu, SlaveAddress, handle, value)
    memcpy(&address, value, sizeof(address));
 
    if(!RTU_IS_VALID_SLAVE_ADDRESS(address))
-   {
-      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_SLAVE_ADDRESS_SET_INVALID);
       return SDEVICE_PROPERTY_STATUS_VALIDATION_ERROR;
-   }
 
    _handle->Runtime->SlaveAddress = address;
 
@@ -142,17 +118,14 @@ bool ModbusRtuSDeviceTryProcessRequest(
       ThisInput   input,
       ThisOutput  output)
 {
-   SDeviceAssert(IS_VALID_THIS_HANDLE(handle));
+   SDeviceAssert(handle);
 
    SDeviceAssert(input.RequestData);
    SDeviceAssert(output.ResponseData);
    SDeviceAssert(output.ResponseSize);
 
    if(input.RequestSize < EMPTY_RTU_ADU_SIZE)
-   {
-      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_WRONG_REQUEST_SIZE);
       return false;
-   }
 
    const RTU_ADU(input.RequestSize - EMPTY_RTU_ADU_SIZE) *request = input.RequestData;
 
@@ -179,10 +152,7 @@ bool ModbusRtuSDeviceTryProcessRequest(
    }
 
    if(request->Crc16 != ComputeCrc16(handle, request, sizeof(*request) - sizeof(request->Crc16)))
-   {
-      SDeviceLogStatus(handle, MODBUS_RTU_SDEVICE_STATUS_WRONG_REQUEST_CRC);
       return false;
-   }
 
    size_t pduResponseSize;
    bool wasPduProcessingSuccessful =
