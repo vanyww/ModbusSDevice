@@ -4,3 +4,6 @@
 [submodule "tablecrcsdevice"]
 	path = Submodules/tablecrcsdevice
 	url = ../tablecrcsdevice.git
+[submodule "unity"]
+	path = Testing/Unity
+	url = ../forks/unity.git
