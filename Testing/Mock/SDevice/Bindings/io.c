@@ -1,11 +1,11 @@
-#include "bindings.h"
+#include "io.h"
 
 #include <memory.h>
 
 uint16_t MockReadRegisters[MOCK_REGISTERS_COUNT];
 uint16_t MockWriteRegisters[MOCK_REGISTERS_COUNT];
 
-ModbusSDeviceBaseProtocolException ReadRegistersMock(void                                           *handle,
+ModbusSDeviceBaseProtocolException MockReadOperation(void                                           *handle,
                                                      const ModbusSDeviceBaseReadOperationParameters *parameters,
                                                      const void                                     *callContext)
 {
@@ -19,7 +19,7 @@ ModbusSDeviceBaseProtocolException ReadRegistersMock(void                       
    return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK;
 }
 
-ModbusSDeviceBaseProtocolException WriteRegistersMock(void                                            *handle,
+ModbusSDeviceBaseProtocolException MockWriteOperation(void                                            *handle,
                                                       const ModbusSDeviceBaseWriteOperationParameters *parameters,
                                                       const void                                      *callContext)
 {
