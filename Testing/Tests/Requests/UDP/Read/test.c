@@ -1,14 +1,22 @@
-#include "test_udp_read.h"
-#include "../../../../Mock/Errors/errors.h"
-#include "../../../../Mock/SDevice/test_device.h"
-#include "../../../../Mock/SDevice/Bindings/bindings.h"
+#include "../../../../Mock/SDevice/modbus_udp.h"
+#include "../../../../Mock/SDevice/Bindings/io.h"
+
+#include "SDeviceCore/common.h"
+
+#include "unity_fixture.h"
 
 #include <memory.h>
 
-bool TestUdpReadOneRequest(void)
+#define _cleanup __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusUdp))))
+
+TEST_GROUP(ModbusUdpReadRequest);
+
+TEST_SETUP(ModbusUdpReadRequest) { }
+TEST_TEAR_DOWN(ModbusUdpReadRequest) { }
+
+TEST(ModbusUdpReadRequest, One)
 {
-   __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusUdp))))
-         SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
@@ -23,25 +31,14 @@ bool TestUdpReadOneRequest(void)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
-      return false;
-
-   if(WAS_ANY_ERROR_THROWN())
-      return false;
-
-   if(replySize != sizeof(expectedReply))
-      return false;
-
-   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
-      return false;
-
-   return true;
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
+   TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
-bool TestUdpReadMultipleRequest(void)
+TEST(ModbusUdpReadRequest, Multiple)
 {
-   __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusUdp))))
-         SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
@@ -57,25 +54,14 @@ bool TestUdpReadMultipleRequest(void)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
-      return false;
-
-   if(WAS_ANY_ERROR_THROWN())
-      return false;
-
-   if(replySize != sizeof(expectedReply))
-      return false;
-
-   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
-      return false;
-
-   return true;
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
+   TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
-bool TestUdpReadOneBtuRequest(void)
+TEST(ModbusUdpReadRequest, OneBtu)
 {
-   __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusUdp))))
-         SDEVICE_HANDLE(ModbusUdp) *handle = CreateModbusUdpSDevice();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
@@ -96,17 +82,14 @@ bool TestUdpReadOneBtuRequest(void)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   if(ModbusUdpSDeviceTryProcessRequest(handle, input, output) != true)
-      return false;
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
+   TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
+}
 
-   if(WAS_ANY_ERROR_THROWN())
-      return false;
-
-   if(replySize != sizeof(expectedReply))
-      return false;
-
-   if(memcmp(expectedReply, replyBuffer, replySize) != 0)
-      return false;
-
-   return true;
+TEST_GROUP_RUNNER(ModbusUdpReadRequest)
+{
+   RUN_TEST_CASE(ModbusUdpReadRequest, One);
+   RUN_TEST_CASE(ModbusUdpReadRequest, Multiple);
+   RUN_TEST_CASE(ModbusUdpReadRequest, OneBtu);
 }
