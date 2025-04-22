@@ -16,7 +16,7 @@ TEST_TEAR_DOWN(ModbusUdpReadRequest) { }
 
 TEST(ModbusUdpReadRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
@@ -38,7 +38,7 @@ TEST(ModbusUdpReadRequest, One)
 
 TEST(ModbusUdpReadRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
@@ -61,7 +61,7 @@ TEST(ModbusUdpReadRequest, Multiple)
 
 TEST(ModbusUdpReadRequest, OneBtu)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
 
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);

@@ -3,7 +3,7 @@
 
 #include <memory.h>
 
-SDEVICE_HANDLE(ModbusTcp) * ModbusTcpSDeviceCreateInstance(void)
+SDEVICE_HANDLE(ModbusTcp) * ModbusTcpMockCreateInstance(void)
 {
    SDEVICE_INIT_DATA(ModbusTcp) init =
    {

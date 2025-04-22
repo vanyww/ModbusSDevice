@@ -16,7 +16,7 @@ TEST_TEAR_DOWN(ModbusTcpReadRequest) { }
 
 TEST(ModbusTcpReadRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    MockReadRegisters[0] = 0x2211;
 
@@ -46,7 +46,7 @@ TEST(ModbusTcpReadRequest, One)
 
 TEST(ModbusTcpReadRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
@@ -77,7 +77,7 @@ TEST(ModbusTcpReadRequest, Multiple)
 
 TEST(ModbusTcpReadRequest, TooMany)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0xFF };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x01, 0x83, 0x03 };

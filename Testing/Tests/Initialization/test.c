@@ -14,7 +14,7 @@ TEST_TEAR_DOWN(Initialization) { }
 TEST(Initialization, ModbusRtu)
 {
    _cleanup(ModbusRtu)
-         SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuSDeviceCreateInstance();
+         SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
 
    TEST_ASSERT_NOT_NULL(handle);
 }
@@ -22,7 +22,7 @@ TEST(Initialization, ModbusRtu)
 TEST(Initialization, ModbusTcp)
 {
    _cleanup(ModbusTcp)
-         SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+         SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    TEST_ASSERT_NOT_NULL(handle);
 }
@@ -30,7 +30,7 @@ TEST(Initialization, ModbusTcp)
 TEST(Initialization, ModbusUdp)
 {
    _cleanup(ModbusUdp)
-         SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpSDeviceCreateInstance();
+         SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
 
    TEST_ASSERT_NOT_NULL(handle);
 }

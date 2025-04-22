@@ -16,7 +16,7 @@ TEST_TEAR_DOWN(ModbusTcpWriteRequest) { }
 
 TEST(ModbusTcpWriteRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x09, 0x01, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22 };
@@ -46,7 +46,7 @@ TEST(ModbusTcpWriteRequest, One)
 
 TEST(ModbusTcpWriteRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
 
    const uint8_t request[] =
             { 0x00, 0x01, 0x00, 0x00, 0x00, 0x0B, 0x01, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44 };

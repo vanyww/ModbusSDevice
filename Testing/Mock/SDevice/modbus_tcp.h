@@ -2,4 +2,4 @@
 
 #include "ModbusSDevice/Tcp/public.h"
 
-SDEVICE_HANDLE(ModbusTcp) * ModbusTcpSDeviceCreateInstance(void);
+SDEVICE_HANDLE(ModbusTcp) * ModbusTcpMockCreateInstance(void);

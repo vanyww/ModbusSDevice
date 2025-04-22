@@ -16,7 +16,7 @@ TEST_TEAR_DOWN(ModbusRtuWriteRequest) { }
 
 TEST(ModbusRtuWriteRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
 
    uint8_t slaveAddress = 0xAA;
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
@@ -46,7 +46,7 @@ TEST(ModbusRtuWriteRequest, One)
 
 TEST(ModbusRtuWriteRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuSDeviceCreateInstance();
+   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
 
    uint8_t slaveAddress = 0xAA;
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);

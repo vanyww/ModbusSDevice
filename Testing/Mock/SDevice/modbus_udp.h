@@ -4,4 +4,4 @@
 
 extern const uint8_t ModbusUdpBtuAddress[];
 
-SDEVICE_HANDLE(ModbusUdp) * ModbusUdpSDeviceCreateInstance(void);
+SDEVICE_HANDLE(ModbusUdp) * ModbusUdpMockCreateInstance(void);
