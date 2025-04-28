@@ -6,6 +6,12 @@
 #include "unity_fixture.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+
+#define ASSERT_FAIL_FORMAT "Assert failed on file (%s) line (%d)"
+#define PANIC_THROWN_FORMAT "Thrown panic "
+
+#define ENUM_TO_STRING(enum) #enum
 
 AssertFailHandler ThisAssertFailHandler;
 PanicHandler ThisPanicHandler;
@@ -48,15 +54,21 @@ void SDeviceFreeMemory(void *pointer)
    free(pointer);
 }
 
-void SDeviceProcessAssertFail(void)
+void SDeviceProcessAssertFail(char *file, int line)
 {
+   int messageLength = snprintf(NULL, 0, ASSERT_FAIL_FORMAT, file, line);
+   char message[messageLength + 1];
+   sprintf(message, ASSERT_FAIL_FORMAT, file, line);
+
+   TEST_MESSAGE(message);
+
    if(ThisAssertFailHandler)
    {
       ThisAssertFailHandler();
    }
    else
    {
-      TEST_FAIL();
+      TEST_FAIL_MESSAGE("Assert fail has not been processed");
    }
 }
 
@@ -68,6 +80,6 @@ void SDeviceProcessPanic(const void *handle, SDevicePanic panic)
    }
    else
    {
-      TEST_FAIL();
+      TEST_FAIL_MESSAGE("Panic has not been processed");
    }
 }
