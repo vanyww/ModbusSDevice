@@ -1,5 +1,5 @@
-#include "../../../../Mock/SDevice/modbus_rtu.h"
-#include "../../../../Mock/SDevice/Bindings/io.h"
+#include "ModbusSDevice/Rtu/public.h"
+#include "../../Mock/SDevice/Bindings/io.h"
 
 #include "SDeviceCore/common.h"
 
@@ -7,19 +7,36 @@
 
 #include <memory.h>
 
-#define _cleanup __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
+static SDEVICE_HANDLE(ModbusRtu) *Handle;
 
 TEST_GROUP(ModbusRtuWriteRequest);
 
-TEST_SETUP(ModbusRtuWriteRequest) { }
-TEST_TEAR_DOWN(ModbusRtuWriteRequest) { }
+TEST_SETUP(ModbusRtuWriteRequest)
+{
+   SDEVICE_INIT_DATA(ModbusRtu) init =
+   {
+      .Base =
+      {
+         .ReadOperation  = MockReadOperation,
+         .WriteOperation = MockWriteOperation
+      },
+   };
+
+   Handle = SDEVICE_CREATE_HANDLE(ModbusRtu)(&init, NULL);
+
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+}
+
+TEST_TEAR_DOWN(ModbusRtuWriteRequest)
+{
+   SDEVICE_DISPOSE_HANDLE(ModbusRtu)(Handle);
+}
 
 TEST(ModbusRtuWriteRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    const uint8_t request[] = { slaveAddress, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x11, 0x22, 0xA1, 0x2E };
    const uint8_t expectedReply[] = { slaveAddress, 0x10, 0x00, 0x00, 0x00, 0x01, 0x18, 0x12 };
@@ -38,7 +55,7 @@ TEST(ModbusRtuWriteRequest, One)
       &replySize
    };
 
-   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
    TEST_ASSERT_EQUAL_UINT16(0x2211, MockWriteRegisters[0]);
@@ -46,10 +63,8 @@ TEST(ModbusRtuWriteRequest, One)
 
 TEST(ModbusRtuWriteRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    const uint8_t request[] = { slaveAddress, 0x10, 0x00, 0x00, 0x00, 0x02, 0x04, 0x11, 0x22, 0x33, 0x44, 0x65, 0x7C };
    const uint8_t expectedReply[] = { slaveAddress, 0x10, 0x00, 0x00, 0x00, 0x02, 0x58, 0x13 };
@@ -68,7 +83,7 @@ TEST(ModbusRtuWriteRequest, Multiple)
       &replySize
    };
 
-   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
    TEST_ASSERT_EQUAL_UINT16(0x2211, MockWriteRegisters[0]);

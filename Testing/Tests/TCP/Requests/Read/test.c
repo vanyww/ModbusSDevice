@@ -1,5 +1,5 @@
-#include "../../../../Mock/SDevice/modbus_tcp.h"
-#include "../../../../Mock/SDevice/Bindings/io.h"
+#include "ModbusSDevice/Tcp/public.h"
+#include "../../Mock/SDevice/Bindings/io.h"
 
 #include "SDeviceCore/common.h"
 
@@ -7,17 +7,34 @@
 
 #include <memory.h>
 
-#define _cleanup __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusTcp))))
+static SDEVICE_HANDLE(ModbusTcp) *Handle;
 
 TEST_GROUP(ModbusTcpReadRequest);
 
-TEST_SETUP(ModbusTcpReadRequest) { }
-TEST_TEAR_DOWN(ModbusTcpReadRequest) { }
+TEST_SETUP(ModbusTcpReadRequest)
+{
+   SDEVICE_INIT_DATA(ModbusTcp) init =
+   {
+      .Base =
+      {
+         .ReadOperation  = MockReadOperation,
+         .WriteOperation = MockWriteOperation
+      },
+   };
+
+   Handle = SDEVICE_CREATE_HANDLE(ModbusTcp)(&init, NULL);
+
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+}
+
+TEST_TEAR_DOWN(ModbusTcpReadRequest)
+{
+   SDEVICE_DISPOSE_HANDLE(ModbusTcp)(Handle);
+}
 
 TEST(ModbusTcpReadRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
-
    MockReadRegisters[0] = 0x2211;
 
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0x01 };
@@ -38,16 +55,14 @@ TEST(ModbusTcpReadRequest, One)
       &replySize
    };
 
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(handle, request, &packetSize));
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(Handle, request, &packetSize));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusTcpReadRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
-
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
 
@@ -69,16 +84,14 @@ TEST(ModbusTcpReadRequest, Multiple)
       &replySize
    };
 
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(handle, request, &packetSize));
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(Handle, request, &packetSize));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusTcpReadRequest, TooMany)
 {
-   _cleanup SDEVICE_HANDLE(ModbusTcp) *handle = ModbusTcpMockCreateInstance();
-
    const uint8_t request[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0xFF };
    const uint8_t expectedReply[] = { 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x01, 0x83, 0x03 };
    uint8_t replyBuffer[MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE];
@@ -97,8 +110,8 @@ TEST(ModbusTcpReadRequest, TooMany)
       &replySize
    };
 
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(handle, request, &packetSize));
-   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessMbapHeader(Handle, request, &packetSize));
+   TEST_ASSERT(ModbusTcpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }

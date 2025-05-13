@@ -1,5 +1,5 @@
-#include "../../../../Mock/SDevice/modbus_rtu.h"
-#include "../../../../Mock/SDevice/Bindings/io.h"
+#include "ModbusSDevice/Rtu/public.h"
+#include "../../Mock/SDevice/Bindings/io.h"
 
 #include "SDeviceCore/common.h"
 
@@ -7,19 +7,36 @@
 
 #include <memory.h>
 
-#define _cleanup __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusRtu))))
+static SDEVICE_HANDLE(ModbusRtu) *Handle;
 
 TEST_GROUP(ModbusRtuReadRequest);
 
-TEST_SETUP(ModbusRtuReadRequest) { }
-TEST_TEAR_DOWN(ModbusRtuReadRequest) { }
+TEST_SETUP(ModbusRtuReadRequest)
+{
+   SDEVICE_INIT_DATA(ModbusRtu) init =
+   {
+      .Base =
+      {
+         .ReadOperation  = MockReadOperation,
+         .WriteOperation = MockWriteOperation
+      },
+   };
+
+   Handle = SDEVICE_CREATE_HANDLE(ModbusRtu)(&init, NULL);
+
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+}
+
+TEST_TEAR_DOWN(ModbusRtuReadRequest)
+{
+   SDEVICE_DISPOSE_HANDLE(ModbusRtu)(Handle);
+}
 
 TEST(ModbusRtuReadRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    MockReadRegisters[0] = 0xBBCC;
 
@@ -40,17 +57,15 @@ TEST(ModbusRtuReadRequest, One)
       &replySize
    };
 
-   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusRtuReadRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
@@ -73,17 +88,15 @@ TEST(ModbusRtuReadRequest, Multiple)
       &replySize
    };
 
-   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusRtuReadRequest, TooMany)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
    const uint8_t expectedReply[] = { slaveAddress, 0x83, 0x03, 0x70, 0xD1 };
@@ -102,17 +115,15 @@ TEST(ModbusRtuReadRequest, TooMany)
       &replySize
    };
 
-   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusRtuReadRequest, WrongSlaveAddress)
 {
-   _cleanup SDEVICE_HANDLE(ModbusRtu) *handle = ModbusRtuMockCreateInstance();
-
    uint8_t slaveAddress = 0xAA;
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(handle, &slaveAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
    const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];
@@ -130,7 +141,7 @@ TEST(ModbusRtuReadRequest, WrongSlaveAddress)
       &replySize
    };
 
-   TEST_ASSERT(!ModbusRtuSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(!ModbusRtuSDeviceTryProcessRequest(Handle, input, output));
 }
 
 TEST_GROUP_RUNNER(ModbusRtuReadRequest)

@@ -1,5 +1,5 @@
-#include "../../../../Mock/SDevice/modbus_udp.h"
-#include "../../../../Mock/SDevice/Bindings/io.h"
+#include "ModbusSDevice/Udp/public.h"
+#include "../../Mock/SDevice/Bindings/io.h"
 
 #include "SDeviceCore/common.h"
 
@@ -7,19 +7,36 @@
 
 #include <memory.h>
 
-#define _cleanup __attribute__((cleanup(SDEVICE_DISPOSE_HANDLE(ModbusUdp))))
+static SDEVICE_HANDLE(ModbusUdp) *Handle;
 
 TEST_GROUP(ModbusUdpReadRequest);
 
-TEST_SETUP(ModbusUdpReadRequest) { }
-TEST_TEAR_DOWN(ModbusUdpReadRequest) { }
+TEST_SETUP(ModbusUdpReadRequest)
+{
+   SDEVICE_INIT_DATA(ModbusUdp) init =
+   {
+      .Base =
+      {
+         .ReadOperation  = MockReadOperation,
+         .WriteOperation = MockWriteOperation
+      },
+   };
+
+   Handle = SDEVICE_CREATE_HANDLE(ModbusUdp)(&init, NULL);
+
+   memset(MockReadRegisters, 0, sizeof(MockReadRegisters));
+   memset(MockWriteRegisters, 0, sizeof(MockWriteRegisters));
+}
+
+TEST_TEAR_DOWN(ModbusUdpReadRequest)
+{
+   SDEVICE_DISPOSE_HANDLE(ModbusUdp)(Handle);
+}
 
 TEST(ModbusUdpReadRequest, One)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
-
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(Handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
 
@@ -31,17 +48,15 @@ TEST(ModbusUdpReadRequest, One)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusUdpReadRequest, Multiple)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
-
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(Handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
    MockReadRegisters[1] = 0x4433;
@@ -54,17 +69,15 @@ TEST(ModbusUdpReadRequest, Multiple)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
 
 TEST(ModbusUdpReadRequest, OneBtu)
 {
-   _cleanup SDEVICE_HANDLE(ModbusUdp) *handle = ModbusUdpMockCreateInstance();
-
    const uint8_t btuAddress[] = { 1, 2, 3, 4, 5, 6 };
-   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(handle, btuAddress);
+   SDEVICE_SET_SIMPLE_PROPERTY(ModbusUdp, BtuAddress)(Handle, btuAddress);
 
    MockReadRegisters[0] = 0x2211;
 
@@ -82,7 +95,7 @@ TEST(ModbusUdpReadRequest, OneBtu)
    ModbusUdpSDeviceInput input = { request, sizeof(request) };
    ModbusUdpSDeviceOutput output = { replyBuffer, &replySize };
 
-   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(handle, input, output));
+   TEST_ASSERT(ModbusUdpSDeviceTryProcessRequest(Handle, input, output));
    TEST_ASSERT_EQUAL_UINT(sizeof(expectedReply), replySize);
    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedReply, replyBuffer, LENGTHOF(expectedReply));
 }
