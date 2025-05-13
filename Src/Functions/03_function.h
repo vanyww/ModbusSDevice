@@ -3,7 +3,7 @@
 #include "../private.h"
 
 #define FUNCTION_03_MAX_REGISTERS_COUNT                                                                                \
-   ((MAX_PDU_SIZE - sizeof(Function03Response)) / MODBUS_SDEVICE_BASE_REGISTER_SIZE)
+   ((MAX_PDU_SIZE - sizeof(Function03Response)) / MODBUS_SDEVICE_REGISTER_SIZE)
 
 typedef struct __attribute__((packed))
 {
@@ -17,13 +17,13 @@ typedef struct __attribute__((packed))
    uint8_t RegistersData[];
 } __attribute__((may_alias)) Function03Response;
 
-static ThisBaseProtocolException Process03FunctionRequest(
+static ModbusSDeviceProtocolException Process03FunctionRequest(
       void                    *handle,
       PduProcessingStageInput  input,
       PduProcessingStageOutput output)
 {
    if(input.RequestSize != sizeof(Function03Request))
-      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
 
    const Function03Request *request  = input.RequestData;
    Function03Response      *response = output.ResponseData;
@@ -32,13 +32,13 @@ static ThisBaseProtocolException Process03FunctionRequest(
    uint16_t registersAddress = SWAP_UINT16_BYTES(request->RegistersAddress);
 
    if(registersCount > FUNCTION_03_MAX_REGISTERS_COUNT)
-      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
 
-   const ThisBaseInitData *init = SDeviceGetHandleInitData(handle);
-   ThisBaseProtocolException operationException =
+   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(handle);
+   ModbusSDeviceProtocolException operationException =
          init->ReadOperation(
                handle,
-               &(const ThisBaseReadOperationParameters)
+               &(const ModbusSDeviceReadOperationParameters)
                {
                   .RegistersData            = response->RegistersData,
                   .RegistersCount           = registersCount,
@@ -47,17 +47,17 @@ static ThisBaseProtocolException Process03FunctionRequest(
                },
                input.CallParameters);
 
-   if(operationException != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
+   if(operationException != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
       return operationException;
 
    if(input.IsOutputMandatory)
    {
-      size_t readRegistersSize = registersCount * MODBUS_SDEVICE_BASE_REGISTER_SIZE;
+      size_t readRegistersSize = registersCount * MODBUS_SDEVICE_REGISTER_SIZE;
 
       response->FollowingDataBytes = readRegistersSize;
 
       *output.ResponseSize = readRegistersSize + sizeof(Function03Response);
    }
 
-   return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK;
+   return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }

@@ -1,3 +1,3 @@
 #pragma once
 
-#include "TableCrcSDevice/config_base.h"
+#include "TableCrcSDevice/config.h"

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "ModbusSDevice/dependencies_base.h"
-
-#include "config.h"
+#include "ModbusSDevice/dependencies.h"
 
 #if MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
    #include "TableCrcSDevice/Crc16/public.h"

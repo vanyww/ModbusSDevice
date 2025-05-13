@@ -16,13 +16,13 @@ typedef struct __attribute__((packed))
    uint16_t RegistersCount;
 } __attribute__((may_alias)) Function16Response;
 
-static ThisBaseProtocolException Process16FunctionRequest(
+static ModbusSDeviceProtocolException Process16FunctionRequest(
       void                    *handle,
       PduProcessingStageInput  input,
       PduProcessingStageOutput output)
 {
    if(input.RequestSize < sizeof(Function16Request))
-      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
 
    const Function16Request *request  = input.RequestData;
    Function16Response      *response = output.ResponseData;
@@ -32,17 +32,17 @@ static ThisBaseProtocolException Process16FunctionRequest(
    uint16_t registersAddress = SWAP_UINT16_BYTES(request->RegistersAddress);
 
    if(bytesToFollow != input.RequestSize - sizeof(Function16Request)      ||
-      bytesToFollow / MODBUS_SDEVICE_BASE_REGISTER_SIZE != registersCount ||
-      bytesToFollow % MODBUS_SDEVICE_BASE_REGISTER_SIZE)
+      bytesToFollow / MODBUS_SDEVICE_REGISTER_SIZE != registersCount ||
+      bytesToFollow % MODBUS_SDEVICE_REGISTER_SIZE)
    {
-      return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
+      return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
    }
 
-   const ThisBaseInitData *init = SDeviceGetHandleInitData(handle);
-   ThisBaseProtocolException operationException =
+   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(handle);
+   ModbusSDeviceProtocolException operationException =
          init->WriteOperation(
                handle,
-               &(const ThisBaseWriteOperationParameters)
+               &(const ModbusSDeviceWriteOperationParameters)
                {
                   .RegistersData    = request->RegistersData,
                   .RegistersAddress = registersAddress,
@@ -50,7 +50,7 @@ static ThisBaseProtocolException Process16FunctionRequest(
                },
                input.CallParameters);
 
-   if(operationException != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
+   if(operationException != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
       return operationException;
 
    if(input.IsOutputMandatory)
@@ -61,5 +61,5 @@ static ThisBaseProtocolException Process16FunctionRequest(
       *output.ResponseSize = sizeof(Function16Response);
    }
 
-   return MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK;
+   return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK;
 }

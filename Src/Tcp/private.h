@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ModbusSDevice/Tcp/public.h"
-#include "../Base/private.h"
+#include "../private.h"
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
 

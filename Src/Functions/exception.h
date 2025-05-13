@@ -8,7 +8,7 @@ typedef struct __attribute__((packed))
 } __attribute__((may_alias)) ExceptionFunctionResponse;
 
 __attribute__((always_inline))
-static inline void ProcessExceptionFunction(ThisBaseProtocolException exception, PduProcessingStageOutput output)
+static inline void ProcessExceptionFunction(ModbusSDeviceProtocolException exception, PduProcessingStageOutput output)
 {
    ExceptionFunctionResponse *response = output.ResponseData;
 

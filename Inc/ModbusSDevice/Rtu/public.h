@@ -1,13 +1,12 @@
 #pragma once
 
-#include "ModbusSDevice/public_base.h"
-
 #include "config.h"
 #include "dependencies.h"
+#include "../public.h"
 
-#define MODBUS_RTU_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_BASE_VERSION_MAJOR
-#define MODBUS_RTU_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_BASE_VERSION_MINOR
-#define MODBUS_RTU_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_BASE_VERSION_PATCH
+#define MODBUS_RTU_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_VERSION_MAJOR
+#define MODBUS_RTU_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_VERSION_MINOR
+#define MODBUS_RTU_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_VERSION_PATCH
 
 #define MODBUS_RTU_SDEVICE_INTERCHAR_DELAY_CHARS  1.5f
 #define MODBUS_RTU_SDEVICE_INTERFRAME_DELAY_CHARS 3.5f
@@ -36,7 +35,7 @@
 
 typedef struct
 {
-   ModbusSDeviceBaseBroadcastContext Base;
+   ModbusSDeviceBroadcastContext Base;
 } ModbusRtuSDeviceCallParameters;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
@@ -44,7 +43,7 @@ SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusRtu);
 
 SDEVICE_INIT_DATA_DECLARATION(ModbusRtu)
 {
-   ModbusSDeviceBaseInitData Base;
+   ModbusSDeviceInitData Base;
 
 #if !MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
    uint16_t (* ComputeCrc16)(SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t size);

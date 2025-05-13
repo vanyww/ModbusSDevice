@@ -19,13 +19,13 @@ typedef enum
    FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG   = 0x80
 } FunctionCode;
 
-typedef ThisBaseProtocolException (* RequestFunctionProcessFunction)(
+typedef ModbusSDeviceProtocolException (* RequestFunctionProcessFunction)(
       void                    *handle,
       PduProcessingStageInput  input,
       PduProcessingStageOutput output);
 
 static void EncodeExceptionResponsePdu(
-      ThisBaseProtocolException exception,
+      ModbusSDeviceProtocolException exception,
       FunctionCode              functionCode,
       PduProcessingStageOutput  output)
 {
@@ -75,13 +75,13 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
 
       default:
          if(input.IsOutputMandatory)
-            EncodeExceptionResponsePdu(MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION, functionCode, output);
+            EncodeExceptionResponsePdu(MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION, functionCode, output);
 
          return true;
    }
 
    size_t functionResponseSize;
-   ThisBaseProtocolException exception =
+   ModbusSDeviceProtocolException exception =
          functionProcessor(
                handle,
                (PduProcessingStageInput)
@@ -97,12 +97,12 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
                   .ResponseSize = &functionResponseSize
                });
 
-   if(exception == MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR)
+   if(exception == MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR)
       return false;
 
    if(input.IsOutputMandatory)
    {
-      if(exception != MODBUS_SDEVICE_BASE_PROTOCOL_EXCEPTION_OK)
+      if(exception != MODBUS_SDEVICE_PROTOCOL_EXCEPTION_OK)
       {
          EncodeExceptionResponsePdu(exception, functionCode, output);
       }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ModbusSDevice/public_base.h"
+#include "ModbusSDevice/public.h"
 
 #define MAX_PDU_SIZE 253U
 #define SWAP_UINT16_BYTES(value) __builtin_bswap16(value)
@@ -23,13 +23,6 @@ typedef struct __attribute__((may_alias))
 {
    bool SupportsBroadcasting;
 } BaseRuntimeData;
-
-typedef ModbusSDeviceBaseInitData ThisBaseInitData;
-typedef ModbusSDeviceBaseBroadcastContext ThisBaseBroadcastContext;
-typedef ModbusSDeviceBaseProtocolException ThisBaseProtocolException;
-
-typedef ModbusSDeviceBaseReadOperationParameters ThisBaseReadOperationParameters;
-typedef ModbusSDeviceBaseWriteOperationParameters ThisBaseWriteOperationParameters;
 
 __attribute__((always_inline))
 static inline bool SupportsBroadcasting(void *handle)

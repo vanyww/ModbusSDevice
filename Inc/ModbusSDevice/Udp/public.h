@@ -1,13 +1,13 @@
-#pragma once
 
-#include "ModbusSDevice/public_base.h"
+#pragma once
 
 #include "config.h"
 #include "dependencies.h"
+#include "../public.h"
 
-#define MODBUS_UDP_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_BASE_VERSION_MAJOR
-#define MODBUS_UDP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_BASE_VERSION_MINOR
-#define MODBUS_UDP_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_BASE_VERSION_PATCH
+#define MODBUS_UDP_SDEVICE_VERSION_MAJOR MODBUS_SDEVICE_VERSION_MAJOR
+#define MODBUS_UDP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_VERSION_MINOR
+#define MODBUS_UDP_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_VERSION_PATCH
 
 #define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE 260U
 #define MODBUS_UDP_SDEVICE_MAX_BTU_MESSAGE_SIZE                                                                        \
@@ -15,8 +15,8 @@
 
 typedef struct
 {
-   ModbusSDeviceBaseBroadcastContext Base;
-   uint8_t                           SlaveAddress;
+   ModbusSDeviceBroadcastContext Base;
+   uint8_t                       SlaveAddress;
 } ModbusUdpSDeviceCallParameters;
 
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusUdp);
@@ -24,7 +24,7 @@ SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusUdp);
 
 SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 {
-   ModbusSDeviceBaseInitData Base;
+   ModbusSDeviceInitData Base;
 };
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, context);
