@@ -9,7 +9,7 @@
 #define MODBUS_UDP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_VERSION_MINOR
 #define MODBUS_UDP_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_VERSION_PATCH
 
-#define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE 260U
+#define MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE 260u
 #define MODBUS_UDP_SDEVICE_MAX_BTU_MESSAGE_SIZE                                                                        \
    (MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE + MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE)
 
@@ -28,11 +28,11 @@ SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 };
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, context);
-SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer);
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, this);
 
 SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusUdp, BtuAddress, uint8_t)[MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE];
-SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value);
-SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value);
+SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value);
+SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value);
 
 typedef struct
 {
@@ -48,6 +48,6 @@ typedef struct
 } ModbusUdpSDeviceOutput;
 
 bool ModbusUdpSDeviceTryProcessRequest(
-      SDEVICE_HANDLE(ModbusUdp) *handle,
+      SDEVICE_HANDLE(ModbusUdp) *this,
       ModbusUdpSDeviceInput      input,
       ModbusUdpSDeviceOutput     output);

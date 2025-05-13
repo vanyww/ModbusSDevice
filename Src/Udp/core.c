@@ -1,7 +1,7 @@
 #include "BtuBlock/btu_block.h"
 
 #include "SDeviceCore/heap.h"
-#include "SDeviceCore/errors.h"
+#include "SDeviceCore/assert.h"
 
 #define MODBUS_UDP_MBAP_HEADER_PROTOCOL_ID 0x0000
 #define MODBUS_UDP_BTU_MBAP_HEADER_PROTOCOL_ID 0x0074
@@ -45,50 +45,45 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, context)
    return instance;
 }
 
-SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, handlePointer)
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, this)
 {
-   SDeviceAssert(handlePointer);
+   ThisHandle *_this = this;
 
-   ThisHandle **_handlePointer = handlePointer;
-   ThisHandle *handle = *_handlePointer;
+   SDeviceAssert(_this);
 
-   SDeviceAssert(handle);
-
-   SDeviceFreeHandle(handle);
-
-   *_handlePointer = NULL;
+   SDeviceFreeHandle(_this);
 }
 
-SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
+SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value)
 {
-   SDeviceAssert(handle);
+   SDeviceAssert(this);
 
    SDeviceAssert(value);
 
-   ThisHandle *_handle = handle;
+   ThisHandle *_handle = this;
    memcpy(value, &_handle->Runtime->BtuAddress, sizeof(_handle->Runtime->BtuAddress));
 
    return SDEVICE_PROPERTY_STATUS_OK;
 }
 
-SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, handle, value)
+SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value)
 {
-   SDeviceAssert(handle);
+   SDeviceAssert(this);
 
    SDeviceAssert(value);
 
-   ThisHandle *_handle = handle;
+   ThisHandle *_handle = this;
    memcpy(_handle->Runtime->BtuAddress, value, sizeof(SDEVICE_PROPERTY_TYPE(ModbusUdp, BtuAddress)));
 
    return SDEVICE_PROPERTY_STATUS_OK;
 }
 
 bool ModbusUdpSDeviceTryProcessRequest(
-      ThisHandle *handle,
+      ThisHandle *this,
       ThisInput   input,
       ThisOutput  output)
 {
-   SDeviceAssert(handle);
+   SDeviceAssert(this);
 
    SDeviceAssert(input.RequestData);
    SDeviceAssert(output.ResponseData);
@@ -129,7 +124,7 @@ bool ModbusUdpSDeviceTryProcessRequest(
    size_t responseDataSize;
    bool wasProcessingSuccessful =
          pduProcessor(
-               handle,
+               this,
                (PduProcessingStageInput)
                {
                   .RequestData       = request->PduBytes,

@@ -2,7 +2,7 @@
 
 #include "SDeviceCore/heap.h"
 #include "SDeviceCore/common.h"
-#include "SDeviceCore/errors.h"
+#include "SDeviceCore/assert.h"
 
 #define MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID 0x0000
 #define EMPTY_TCP_ADU_SIZE sizeof(TcpAdu)
@@ -42,26 +42,21 @@ SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, context)
    return instance;
 }
 
-SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer)
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, this)
 {
-   SDeviceAssert(handlePointer);
+   ThisHandle *_this = this;
 
-   ThisHandle **_handlePointer = handlePointer;
-   ThisHandle *handle = *_handlePointer;
+   SDeviceAssert(_this);
 
-   SDeviceAssert(handle);
-
-   SDeviceFreeHandle(handle);
-
-   *_handlePointer = NULL;
+   SDeviceFreeHandle(_this);
 }
 
 bool ModbusTcpSDeviceTryProcessMbapHeader(
-      ThisHandle *handle,
+      ThisHandle *this,
       const void *mbapHeaderData,
       size_t     *leftPacketSize)
 {
-   SDeviceAssert(handle);
+   SDeviceAssert(this);
 
    SDeviceAssert(mbapHeaderData);
    SDeviceAssert(leftPacketSize);
@@ -71,31 +66,31 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(
    if(mbapHeader->ProtocolIdx != SWAP_UINT16_BYTES(MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID))
       return false;
 
-   handle->Runtime->MbapHeaderData.PacketSize = SWAP_UINT16_BYTES(mbapHeader->PacketSize);
+   this->Runtime->MbapHeaderData.PacketSize = SWAP_UINT16_BYTES(mbapHeader->PacketSize);
 
-   if(handle->Runtime->MbapHeaderData.PacketSize <= SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
+   if(this->Runtime->MbapHeaderData.PacketSize <= SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
       return false;
 
-   handle->Runtime->MbapHeaderData.SlaveAddress   = mbapHeader->SlaveAddress;
-   handle->Runtime->MbapHeaderData.TransactionIdx = mbapHeader->TransactionIdx;
+   this->Runtime->MbapHeaderData.SlaveAddress   = mbapHeader->SlaveAddress;
+   this->Runtime->MbapHeaderData.TransactionIdx = mbapHeader->TransactionIdx;
 
-   *leftPacketSize = handle->Runtime->MbapHeaderData.PacketSize - SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress);
+   *leftPacketSize = this->Runtime->MbapHeaderData.PacketSize - SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress);
 
    return true;
 }
 
 bool ModbusTcpSDeviceTryProcessRequest(
-      ThisHandle *handle,
+      ThisHandle *this,
       ThisInput   input,
       ThisOutput  output)
 {
-   SDeviceAssert(handle);
+   SDeviceAssert(this);
 
    SDeviceAssert(input.RequestData);
    SDeviceAssert(output.ResponseData);
    SDeviceAssert(output.ResponseSize);
 
-   if(input.RequestSize != handle->Runtime->MbapHeaderData.PacketSize - SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
+   if(input.RequestSize != this->Runtime->MbapHeaderData.PacketSize - SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
       return false;
 
    TcpAdu *response = output.ResponseData;
@@ -103,13 +98,13 @@ bool ModbusTcpSDeviceTryProcessRequest(
    size_t pduResponseSize;
    bool wasPduProcessingSuccessful =
          ModbusSDeviceBaseTryProcessRequestPdu(
-               handle,
+               this,
                (PduProcessingStageInput)
                {
                   .RequestData       = input.RequestData,
                   .CallParameters    = &(const ThisCallParameters)
                   {
-                     .SlaveAddress = handle->Runtime->MbapHeaderData.SlaveAddress
+                     .SlaveAddress = this->Runtime->MbapHeaderData.SlaveAddress
                   },
                   .RequestSize       = input.RequestSize,
                   .IsOutputMandatory = true
@@ -125,8 +120,8 @@ bool ModbusTcpSDeviceTryProcessRequest(
       response->MbapHeader = (TcpMbapHeader)
       {
          .ProtocolIdx    = SWAP_UINT16_BYTES(MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID),
-         .TransactionIdx = handle->Runtime->MbapHeaderData.TransactionIdx,
-         .SlaveAddress   = handle->Runtime->MbapHeaderData.SlaveAddress,
+         .TransactionIdx = this->Runtime->MbapHeaderData.TransactionIdx,
+         .SlaveAddress   = this->Runtime->MbapHeaderData.SlaveAddress,
          .PacketSize     = SWAP_UINT16_BYTES(pduResponseSize + SIZEOF_MEMBER(TcpAdu, MbapHeader.SlaveAddress))
       };
 

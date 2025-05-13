@@ -2,7 +2,7 @@
 
 #include "ModbusSDevice/public.h"
 
-#define MAX_PDU_SIZE 253U
+#define MAX_PDU_SIZE 253u
 #define SWAP_UINT16_BYTES(value) __builtin_bswap16(value)
 
 typedef struct

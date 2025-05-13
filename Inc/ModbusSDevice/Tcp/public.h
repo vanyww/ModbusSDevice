@@ -8,8 +8,8 @@
 #define MODBUS_TCP_SDEVICE_VERSION_MINOR MODBUS_SDEVICE_VERSION_MINOR
 #define MODBUS_TCP_SDEVICE_VERSION_PATCH MODBUS_SDEVICE_VERSION_PATCH
 
-#define MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE 7U
-#define MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE 253U
+#define MODBUS_TCP_SDEVICE_MBAP_HEADER_SIZE 7u
+#define MODBUS_TCP_SDEVICE_MAX_MESSAGE_SIZE 253u
 
 typedef struct
 {
@@ -25,7 +25,7 @@ SDEVICE_INIT_DATA_DECLARATION(ModbusTcp)
 };
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusTcp, init, context);
-SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, handlePointer);
+SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusTcp, this);
 
 typedef struct
 {
@@ -40,11 +40,11 @@ typedef struct
 } ModbusTcpSDeviceOutput;
 
 bool ModbusTcpSDeviceTryProcessMbapHeader(
-      SDEVICE_HANDLE(ModbusTcp) *handle,
+      SDEVICE_HANDLE(ModbusTcp) *this,
       const void                *mbapHeaderData,
       size_t                    *leftPacketSize);
 
 bool ModbusTcpSDeviceTryProcessRequest(
-      SDEVICE_HANDLE(ModbusTcp) *handle,
+      SDEVICE_HANDLE(ModbusTcp) *this,
       ModbusTcpSDeviceInput      input,
       ModbusTcpSDeviceOutput     output);
