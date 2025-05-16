@@ -1,3 +1,4 @@
+#include "private.h"
 #include "Functions/exception.h"
 #include "Functions/03_function.h"
 #include "Functions/16_function.h"
@@ -19,22 +20,22 @@ typedef enum
    FUNCTION_CODE_EXCEPTION_RESPONSE_FLAG   = 0x80
 } FunctionCode;
 
-typedef ModbusSDeviceProtocolException (* RequestFunctionProcessFunction)(
-      void                    *handle,
-      PduProcessingStageInput  input,
-      PduProcessingStageOutput output);
+typedef ModbusSDeviceProtocolException (* RequestFunctionProcess)(
+      void                                 *this,
+      ModbusSDevicePduProcessingStageInput  input,
+      ModbusSDevicePduProcessingStageOutput output);
 
 static void EncodeExceptionResponsePdu(
-      ModbusSDeviceProtocolException exception,
-      FunctionCode              functionCode,
-      PduProcessingStageOutput  output)
+      ModbusSDeviceProtocolException        exception,
+      FunctionCode                          functionCode,
+      ModbusSDevicePduProcessingStageOutput output)
 {
    MessagePdu *response = output.ResponseData;
 
    size_t functionResponseSize;
    ProcessExceptionFunction(
          exception,
-         (PduProcessingStageOutput)
+         (ModbusSDevicePduProcessingStageOutput)
          {
             .ResponseData = response->FunctionData,
             .ResponseSize = &functionResponseSize
@@ -45,20 +46,19 @@ static void EncodeExceptionResponsePdu(
    *output.ResponseSize = EMPTY_PDU_SIZE + functionResponseSize;
 }
 
-bool ModbusSDeviceBaseTryProcessRequestPdu(
-      void                    *handle,
-      PduProcessingStageInput  input,
-      PduProcessingStageOutput output)
+bool ModbusSDeviceInternalTryProcessRequestPdu(
+      void                                 *this,
+      ModbusSDevicePduProcessingStageInput  input,
+      ModbusSDevicePduProcessingStageOutput output)
 {
    if(input.RequestSize < EMPTY_PDU_SIZE || input.RequestSize > MAX_PDU_SIZE)
       return false;
 
-   const MessagePdu *request  = input.RequestData;
-   MessagePdu       *response = output.ResponseData;
-
+   const MessagePdu *request = input.RequestData;
+   MessagePdu *response = output.ResponseData;
    uint8_t functionCode = request->FunctionCode;
 
-   RequestFunctionProcessFunction functionProcessor;
+   RequestFunctionProcess functionProcess;
    switch(functionCode)
    {
 #if MODBUS_SDEVICE_USE_FUNCTION_04_AS_FUNCTION_03_ALIAS
@@ -66,32 +66,36 @@ bool ModbusSDeviceBaseTryProcessRequestPdu(
          /* fall-through */
 #endif
       case FUNCTION_CODE_READ_HOLDING_REGISTERS:
-         functionProcessor = Process03FunctionRequest;
+         functionProcess = Process03FunctionRequest;
          break;
 
       case FUNCTION_CODE_PRESET_MULTIPLE_REGISTERS:
-         functionProcessor = Process16FunctionRequest;
+         functionProcess = Process16FunctionRequest;
          break;
 
       default:
          if(input.IsOutputMandatory)
-            EncodeExceptionResponsePdu(MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION, functionCode, output);
-
+         {
+            EncodeExceptionResponsePdu(
+                  MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_FUNCTION,
+                  functionCode,
+                  output);
+         }
          return true;
    }
 
    size_t functionResponseSize;
    ModbusSDeviceProtocolException exception =
-         functionProcessor(
-               handle,
-               (PduProcessingStageInput)
+         functionProcess(
+               this,
+               (ModbusSDevicePduProcessingStageInput)
                {
                   .RequestData       = request->FunctionData,
                   .CallParameters    = input.CallParameters,
                   .RequestSize       = input.RequestSize - EMPTY_PDU_SIZE,
                   .IsOutputMandatory = input.IsOutputMandatory
                },
-               (PduProcessingStageOutput)
+               (ModbusSDevicePduProcessingStageOutput)
                {
                   .ResponseData = response->FunctionData,
                   .ResponseSize = &functionResponseSize

@@ -17,31 +17,31 @@ typedef struct __attribute__((packed))
 } __attribute__((may_alias)) Function16Response;
 
 static ModbusSDeviceProtocolException Process16FunctionRequest(
-      void                    *handle,
-      PduProcessingStageInput  input,
-      PduProcessingStageOutput output)
+      void                                 *this,
+      ModbusSDevicePduProcessingStageInput  input,
+      ModbusSDevicePduProcessingStageOutput output)
 {
    if(input.RequestSize < sizeof(Function16Request))
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
 
-   const Function16Request *request  = input.RequestData;
-   Function16Response      *response = output.ResponseData;
+   const Function16Request *request = input.RequestData;
+   Function16Response *response = output.ResponseData;
 
-   uint8_t  bytesToFollow    = request->BytesToFollow;
-   uint16_t registersCount   = SWAP_UINT16_BYTES(request->RegistersCount);
-   uint16_t registersAddress = SWAP_UINT16_BYTES(request->RegistersAddress);
+   uint8_t  bytesToFollow = request->BytesToFollow;
+   uint16_t registersCount = __builtin_bswap16(request->RegistersCount);
+   uint16_t registersAddress = __builtin_bswap16(request->RegistersAddress);
 
-   if(bytesToFollow != input.RequestSize - sizeof(Function16Request)      ||
-      bytesToFollow / MODBUS_SDEVICE_REGISTER_SIZE != registersCount ||
-      bytesToFollow % MODBUS_SDEVICE_REGISTER_SIZE)
+   if(bytesToFollow != input.RequestSize - sizeof(Function16Request) ||
+         bytesToFollow / MODBUS_SDEVICE_REGISTER_SIZE != registersCount ||
+         bytesToFollow % MODBUS_SDEVICE_REGISTER_SIZE)
    {
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
    }
 
-   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(handle);
+   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(this);
    ModbusSDeviceProtocolException operationException =
          init->WriteOperation(
-               handle,
+               this,
                &(const ModbusSDeviceWriteOperationParameters)
                {
                   .RegistersData    = request->RegistersData,
@@ -55,8 +55,8 @@ static ModbusSDeviceProtocolException Process16FunctionRequest(
 
    if(input.IsOutputMandatory)
    {
-      response->RegistersAddress = SWAP_UINT16_BYTES(registersAddress);
-      response->RegistersCount   = SWAP_UINT16_BYTES(registersCount);
+      response->RegistersAddress = __builtin_bswap16(registersAddress);
+      response->RegistersCount = __builtin_bswap16(registersCount);
 
       *output.ResponseSize = sizeof(Function16Response);
    }

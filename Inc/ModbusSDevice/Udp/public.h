@@ -13,14 +13,19 @@
 #define MODBUS_UDP_SDEVICE_MAX_BTU_MESSAGE_SIZE                                                                        \
    (MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE + MODBUS_UDP_SDEVICE_MAX_MESSAGE_SIZE)
 
-typedef struct
-{
-   ModbusSDeviceBroadcastContext Base;
-   uint8_t                       SlaveAddress;
-} ModbusUdpSDeviceCallParameters;
-
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusUdp);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusUdp);
+
+typedef struct
+{
+   uint8_t SlaveAddress;
+   bool    IsBroadcast;
+} ModbusUdpSDeviceCallParameters;
+
+typedef struct
+{
+   uint8_t Values[MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE];
+} ModbusUdpSDeviceBtuAddress;
 
 SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 {
@@ -30,7 +35,7 @@ SDEVICE_INIT_DATA_DECLARATION(ModbusUdp)
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusUdp, init, context);
 SDEVICE_DISPOSE_HANDLE_DECLARATION(ModbusUdp, this);
 
-SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusUdp, BtuAddress, uint8_t)[MODBUS_UDP_SDEVICE_BTU_ADDRESS_SIZE];
+SDEVICE_PROPERTY_TYPE_DECLARATION(ModbusUdp, BtuAddress, ModbusUdpSDeviceBtuAddress);
 SDEVICE_GET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value);
 SDEVICE_SET_SIMPLE_PROPERTY_DECLARATION(ModbusUdp, BtuAddress, this, value);
 

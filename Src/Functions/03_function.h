@@ -18,26 +18,26 @@ typedef struct __attribute__((packed))
 } __attribute__((may_alias)) Function03Response;
 
 static ModbusSDeviceProtocolException Process03FunctionRequest(
-      void                    *handle,
-      PduProcessingStageInput  input,
-      PduProcessingStageOutput output)
+      void                                 *this,
+      ModbusSDevicePduProcessingStageInput  input,
+      ModbusSDevicePduProcessingStageOutput output)
 {
    if(input.RequestSize != sizeof(Function03Request))
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_NON_PROTOCOL_ERROR;
 
-   const Function03Request *request  = input.RequestData;
-   Function03Response      *response = output.ResponseData;
+   const Function03Request *request = input.RequestData;
+   Function03Response *response = output.ResponseData;
 
-   uint16_t registersCount   = SWAP_UINT16_BYTES(request->RegistersCount);
-   uint16_t registersAddress = SWAP_UINT16_BYTES(request->RegistersAddress);
+   uint16_t registersCount = __builtin_bswap16(request->RegistersCount);
+   uint16_t registersAddress = __builtin_bswap16(request->RegistersAddress);
 
    if(registersCount > FUNCTION_03_MAX_REGISTERS_COUNT)
       return MODBUS_SDEVICE_PROTOCOL_EXCEPTION_ILLEGAL_DATA_VALUE;
 
-   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(handle);
+   const ModbusSDeviceInitData *init = SDeviceGetHandleInitData(this);
    ModbusSDeviceProtocolException operationException =
          init->ReadOperation(
-               handle,
+               this,
                &(const ModbusSDeviceReadOperationParameters)
                {
                   .RegistersData            = response->RegistersData,

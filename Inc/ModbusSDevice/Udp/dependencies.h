@@ -1,3 +1,3 @@
 #pragma once
 
-#include "TableCrcSDevice/dependencies.h"
+#include "../dependencies.h"

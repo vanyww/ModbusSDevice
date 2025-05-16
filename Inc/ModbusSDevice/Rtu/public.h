@@ -33,21 +33,22 @@
 
 #define MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE 256u
 
-typedef struct
-{
-   ModbusSDeviceBroadcastContext Base;
-} ModbusRtuSDeviceCallParameters;
-
 SDEVICE_HANDLE_FORWARD_DECLARATION(ModbusRtu);
 SDEVICE_INIT_DATA_FORWARD_DECLARATION(ModbusRtu);
+
+typedef struct
+{
+   bool IsBroadcast;
+} ModbusRtuSDeviceCallParameters;
 
 SDEVICE_INIT_DATA_DECLARATION(ModbusRtu)
 {
    ModbusSDeviceInitData Base;
 
-#if !MODBUS_RTU_SDEVICE_USE_INTERNAL_CRC
-   uint16_t (* ComputeCrc16)(SDEVICE_HANDLE(ModbusRtu) *handle, const void *data, size_t size);
-#endif
+   uint16_t (* ComputeCrc16)(
+         SDEVICE_HANDLE(ModbusRtu) *this,
+         const void                *data,
+         size_t                     size);
 };
 
 SDEVICE_CREATE_HANDLE_DECLARATION(ModbusRtu, init, context);
