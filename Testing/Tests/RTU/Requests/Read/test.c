@@ -1,5 +1,6 @@
 #include "ModbusSDevice/Rtu/public.h"
 #include "../../Mock/SDevice/Bindings/io.h"
+#include "../../Mock/SDevice/Bindings/crc.h"
 
 #include "SDeviceCore/common.h"
 
@@ -15,11 +16,13 @@ TEST_SETUP(ModbusRtuReadRequest)
 {
    SDEVICE_INIT_DATA(ModbusRtu) init =
    {
+      .ComputeCrc16 = MockComputeCrc16,
+
       .Base =
       {
          .ReadOperation  = MockReadOperation,
          .WriteOperation = MockWriteOperation
-      },
+      }
    };
 
    Handle = SDEVICE_CREATE_HANDLE(ModbusRtu)(&init, NULL);
@@ -40,8 +43,8 @@ TEST(ModbusRtuReadRequest, One)
 
    MockReadRegisters[0] = 0xBBCC;
 
-   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0x01, 0x9D, 0xD1 };
-   const uint8_t expectedReply[] = { slaveAddress, 0x03, 0x02, 0xCC, 0xBB, 0x88, 0xEF };
+   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0x01, 0xEE, 0xEE };
+   const uint8_t expectedReply[] = { slaveAddress, 0x03, 0x02, 0xCC, 0xBB, 0xEE, 0xEE };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];
    size_t replySize;
 
@@ -71,8 +74,8 @@ TEST(ModbusRtuReadRequest, Multiple)
    MockReadRegisters[1] = 0x4433;
    MockReadRegisters[2] = 0x6655;
 
-   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0x03, 0x1C, 0x10 };
-   const uint8_t expectedReply[] = { slaveAddress, 0x03, 0x06, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0xA1, 0x2F };
+   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0x03, 0xEE, 0xEE };
+   const uint8_t expectedReply[] = { slaveAddress, 0x03, 0x06, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0xEE, 0xEE };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];
    size_t replySize;
 
@@ -98,8 +101,8 @@ TEST(ModbusRtuReadRequest, TooMany)
    uint8_t slaveAddress = 0xAA;
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
-   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0xFF, 0x1C, 0x51 };
-   const uint8_t expectedReply[] = { slaveAddress, 0x83, 0x03, 0x70, 0xD1 };
+   const uint8_t request[] = { slaveAddress, 0x03, 0x00, 0x00, 0x00, 0xFF, 0xEE, 0xEE };
+   const uint8_t expectedReply[] = { slaveAddress, 0x83, 0x03, 0xEE, 0xEE };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];
    size_t replySize;
 
@@ -125,7 +128,7 @@ TEST(ModbusRtuReadRequest, WrongSlaveAddress)
    uint8_t slaveAddress = 0xAA;
    SDEVICE_SET_SIMPLE_PROPERTY(ModbusRtu, SlaveAddress)(Handle, &slaveAddress);
 
-   const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A };
+   const uint8_t request[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0xEE, 0xEE };
    uint8_t replyBuffer[MODBUS_RTU_SDEVICE_MAX_MESSAGE_SIZE];
    size_t replySize;
 
