@@ -66,16 +66,16 @@ bool ModbusTcpSDeviceTryProcessMbapHeader(
    if(mbapHeader->ProtocolIdx != __builtin_bswap16(MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID))
       return false;
 
-   this->Runtime->MbapHeader.PacketSize = __builtin_bswap16(mbapHeader->PacketSize);
+   this->Runtime->MbapHeaderPacketSize = __builtin_bswap16(mbapHeader->PacketSize);
 
-   if(this->Runtime->MbapHeader.PacketSize <= SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
+   if(this->Runtime->MbapHeaderPacketSize <= SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress))
       return false;
 
-   this->Runtime->MbapHeader.SlaveAddress = mbapHeader->SlaveAddress;
-   this->Runtime->MbapHeader.TransactionIdx = mbapHeader->TransactionIdx;
+   this->Runtime->MbapHeaderSlaveAddress = mbapHeader->SlaveAddress;
+   this->Runtime->MbapHeaderTransactionIdx = mbapHeader->TransactionIdx;
 
    *leftPacketSize =
-         this->Runtime->MbapHeader.PacketSize -
+         this->Runtime->MbapHeaderPacketSize -
          SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress);
 
    return true;
@@ -92,7 +92,7 @@ bool ModbusTcpSDeviceTryProcessRequest(
    SDeviceAssert(output.ResponseSize);
 
    size_t expectedRequestSize =
-         this->Runtime->MbapHeader.PacketSize -
+         this->Runtime->MbapHeaderPacketSize -
          SIZEOF_MEMBER(TcpMbapHeader, SlaveAddress);
 
    if(expectedRequestSize != input.RequestSize)
@@ -110,7 +110,7 @@ bool ModbusTcpSDeviceTryProcessRequest(
 
                   .CallParameters    = &(const ModbusTcpSDeviceCallParameters)
                   {
-                     .SlaveAddress = this->Runtime->MbapHeader.SlaveAddress
+                     .SlaveAddress = this->Runtime->MbapHeaderSlaveAddress
                   },
 
                   .RequestSize       = input.RequestSize,
@@ -127,8 +127,8 @@ bool ModbusTcpSDeviceTryProcessRequest(
       response->MbapHeader = (TcpMbapHeader)
       {
          .ProtocolIdx    = __builtin_bswap16(MODBUS_TCP_MBAP_HEADER_PROTOCOL_ID),
-         .TransactionIdx = this->Runtime->MbapHeader.TransactionIdx,
-         .SlaveAddress   = this->Runtime->MbapHeader.SlaveAddress,
+         .TransactionIdx = this->Runtime->MbapHeaderTransactionIdx,
+         .SlaveAddress   = this->Runtime->MbapHeaderSlaveAddress,
          .PacketSize     =
                __builtin_bswap16(
                      pduResponseSize + SIZEOF_MEMBER(TcpAdu, MbapHeader.SlaveAddress))

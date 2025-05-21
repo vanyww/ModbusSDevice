@@ -5,15 +5,13 @@
 
 SDEVICE_RUNTIME_DATA_FORWARD_DECLARATION(ModbusTcp);
 
+SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusTcp);
+
 SDEVICE_RUNTIME_DATA_DECLARATION(ModbusTcp)
 {
-   struct
-   {
-      uint16_t TransactionIdx;
-      uint16_t PacketSize;
-      uint8_t  SlaveAddress;
-   } MbapHeader;
+   uint16_t MbapHeaderTransactionIdx;
+   uint16_t MbapHeaderPacketSize;
+   uint8_t  MbapHeaderSlaveAddress;
 };
 
 SDEVICE_HANDLE_DECLARATION(ModbusTcp);
-SDEVICE_INTERNAL_ALIASES_DECLARATION(ModbusTcp);
